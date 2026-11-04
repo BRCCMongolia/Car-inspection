@@ -16,9 +16,11 @@
  *
  * Үзлэг бүр судалгааны нэртэй хуудсанд (жишээ нь "Хулан хүзүүвчлэх 2026") мөр болж орно.
  * Селфи ба гэмтлийн зураг Drive-ийн "Машины үзлэг зураг / <судалгаа>" хавтсанд хадгалагдана.
+ * Аппын "ZIP-ийг имэйлээр илгээх" товчоор ирсэн ZIP нь "Машины үзлэг илгээсэн" хавтсанд хадгалагдаж, RECIPIENTS руу очно.
  */
 
 var PHOTO_ROOT = 'Машины үзлэг зураг';
+var ZIP_ROOT = 'Машины үзлэг илгээсэн';
 // Хүлээн авах имэйл. Олон хаяг бол таслалаар: 'a@gmail.com,b@gmail.com'
 var RECIPIENTS = 'data.brcc@gmail.com';
 // false: зөвхөн хэвийн бус зүйлтэй үзлэгийг имэйлээр мэдэгдэнэ. true: бүх үзлэгийг.
@@ -34,6 +36,7 @@ function doPost(e) {
     else if (req.action === 'upsert') out = upsert(req);
     else if (req.action === 'photo') out = photo(req);
     else if (req.action === 'notify') out = notify(req);
+    else if (req.action === 'email') out = email(req);
     else out = { ok: false, error: 'unknown action' };
     return json(out);
   } catch (err) {
@@ -106,4 +109,18 @@ function notify(req) {
   var body = (req.body || '') + '\n\nSheet: ' + SpreadsheetApp.getActive().getUrl();
   MailApp.sendEmail(RECIPIENTS, req.subject || 'Машины үзлэг', body, { name: 'Машины үзлэг · BRCC' });
   return { ok: true, to: RECIPIENTS };
+}
+
+// Судалгааны ZIP-ийг Drive-д хадгалаад RECIPIENTS руу имэйлээр илгээнэ (20 MB-аас том бол хавсралтын оронд Drive холбоос).
+function email(req) {
+  var blob = Utilities.newBlob(Utilities.base64Decode(req.data), 'application/zip', req.name);
+  var dir = folder(folder(DriveApp.getRootFolder(), ZIP_ROOT), req.folder || 'Бусад');
+  var file = dir.createFile(blob);
+  RECIPIENTS.split(',').forEach(function (r) { try { file.addViewer(r.trim()); } catch (e) {} });
+  var small = blob.getBytes().length < 20 * 1024 * 1024;
+  var body = (req.body || '') + '\n\nDrive: ' + file.getUrl() + '\nSheet: ' + SpreadsheetApp.getActive().getUrl();
+  var opts = { name: 'BRCC Car · Машины үзлэг' };
+  if (small) opts.attachments = [blob];
+  MailApp.sendEmail(RECIPIENTS, req.subject || req.name, body, opts);
+  return { ok: true, to: RECIPIENTS, url: file.getUrl(), attached: small };
 }

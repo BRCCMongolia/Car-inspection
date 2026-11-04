@@ -1,7 +1,7 @@
 // Офлайн ажиллагаа: аппын файлуудыг утсанд хадгална. Апп шинэчлэхдээ VERSION-ийг өөрчилнө.
-const VERSION = 'v1.0.9';
+const VERSION = 'v1.1.0';
 const SHELL = 'shell-' + VERSION;
-const FILES = ['./', 'index.html', 'manifest.webmanifest', 'img/icon-192.png', 'img/icon-512.png', 'img/apple-touch-icon.png', 'img/brcc.png'];
+const FILES = ['./', 'index.html', 'manifest.webmanifest', 'img/icon-192.png', 'img/icon-512.png', 'img/apple-touch-icon.png', 'img/brcc.png', 'js/jszip.min.js'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(SHELL).then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));

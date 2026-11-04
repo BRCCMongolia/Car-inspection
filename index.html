@@ -18,37 +18,36 @@
 <style>
 /* Layout: one narrow phone column; blue app bar like the paper form's header band, cards only for vehicles */
 :root{
-  --brand:#1E5BC6; --brand-ink:#ffffff; --brand-deep:#163F8C;
+  --brand:#0F6CBD; --brand-ink:#ffffff; --brand-deep:#0A4F8C; --bar:#0F6CBD; --bar-2:#0B5AA0; --leaf:#2E7D32; --tint:#E8F2FB;
   --bg:#F3F5F9; --surface:#ffffff; --fg:#141821; --muted:#5D6678; --line:#D8DDE7;
   --ok:#17804A; --ok-bg:#E3F4EA; --bad:#C2341F; --bad-bg:#FBE9E5; --warn:#9A6200; --warn-bg:#FFF3D6;
   --font-display:"Unbounded","Golos Text",system-ui,sans-serif;
   --font-body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --brand:#3B76E0; --brand-deep:#1B3E80; --bg:#0F131A; --surface:#181E28; --fg:#E8ECF3; --muted:#9AA4B6; --line:#2C3443;
+  --brand:#2A7FCC; --brand-deep:#1B3E80; --bar:#0C4A86; --bar-2:#093A6B; --leaf:#3E9142; --tint:#14273B; --bg:#0F131A; --surface:#181E28; --fg:#E8ECF3; --muted:#9AA4B6; --line:#2C3443;
   --ok:#4CC584; --ok-bg:#15301F; --bad:#FF7B66; --bad-bg:#3A1A15; --warn:#F2B84B; --warn-bg:#352812; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --brand:#3B76E0; --brand-deep:#1B3E80; --bg:#0F131A; --surface:#181E28; --fg:#E8ECF3; --muted:#9AA4B6; --line:#2C3443;
+  --brand:#2A7FCC; --brand-deep:#1B3E80; --bar:#0C4A86; --bar-2:#093A6B; --leaf:#3E9142; --tint:#14273B; --bg:#0F131A; --surface:#181E28; --fg:#E8ECF3; --muted:#9AA4B6; --line:#2C3443;
   --ok:#4CC584; --ok-bg:#15301F; --bad:#FF7B66; --bad-bg:#3A1A15; --warn:#F2B84B; --warn-bg:#352812; color-scheme:dark}
 *{box-sizing:border-box}
-html,body{min-height:100%}
+html,body{min-height:100%;overflow-x:clip}
 body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.45}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--brand)}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--brand);outline-offset:2px}
-.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--brand);color:var(--brand-ink);
-  padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,var(--bar),var(--bar-2));color:var(--brand-ink);box-shadow:0 1px 0 rgba(0,0,0,.12);
+  padding-top:calc(12px + env(safe-area-inset-top,0px));padding-bottom:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .bar-in{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:12px}
 .bar img{width:40px;height:40px;border-radius:10px;flex:none;box-shadow:0 0 0 1.5px rgba(255,255,255,.35)}
-.bar h1{font-family:var(--font-display);font-size:16px;font-weight:700;margin:0;line-height:1.2;text-wrap:balance;letter-spacing:.01em}
-.bar .sub{font-size:13px;opacity:.85}
-.bar .back{background:none;border:0;color:inherit;font-size:24px;line-height:1;padding:4px 8px 4px 0}
+.bar h1{font-family:var(--font-display);font-size:17px;font-weight:700;margin:0;line-height:1.25;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .sub{font-size:13px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .back{background:rgba(255,255,255,.14);border:0;color:inherit;font-size:22px;line-height:1;width:40px;height:40px;border-radius:12px;flex:none;display:grid;place-items:center}
 main{max-width:560px;margin:0 auto;padding-block:16px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
 h2{font-family:var(--font-display);font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:8px 0 0}
 .tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
 .tabs button{border:0;background:none;padding:10px;border-radius:9px;font-weight:600;color:var(--muted)}
-.tabs button[aria-selected="true"]{background:var(--brand);color:var(--brand-ink)}
+.tabs button[aria-selected="true"]{background:var(--brand);color:var(--brand-ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .car{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
 .car-top{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
 .plate{display:inline-block;font-family:var(--font-display);font-weight:700;font-size:18px;letter-spacing:.06em;border:2px solid var(--fg);border-radius:6px;padding:2px 10px;background:var(--surface)}
@@ -121,11 +120,18 @@ textarea{min-height:64px;resize:vertical}
 .title-edit{background:none;border:0;color:inherit;opacity:.8;font-size:13px;padding:0;text-decoration:underline}
 @media (max-width:420px){.item-head{flex-direction:column;align-items:stretch}.seg{width:100%}.seg button{padding:10px 4px}.grid2{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:no-preference){.btn,.seg button{transition:background .15s,color .15s}}
-.org{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
-.org .logo{background:#fff;border-radius:10px;padding:6px 8px;flex:none;display:flex}
-.org .logo img{height:60px;width:auto;max-width:96px;object-fit:contain;display:block}
-.org b{display:block;font-family:var(--font-display);font-size:14.5px;line-height:1.3;text-wrap:balance}
-.org span{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.org{display:flex;gap:14px;align-items:center;border-radius:18px;padding:16px;color:#fff;background:linear-gradient(135deg,var(--bar) 0%,var(--bar-2) 100%);box-shadow:0 6px 18px rgba(11,90,160,.18)}
+.org .logo{background:#fff;border-radius:14px;padding:8px 10px;flex:none;display:flex;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.org .logo img{height:52px;width:auto;max-width:84px;object-fit:contain;display:block}
+.org b{display:block;font-family:var(--font-display);font-size:14px;line-height:1.3;text-wrap:balance}
+.org .en{display:block;font-size:12.5px;opacity:.85;margin-top:3px;line-height:1.3}
+.org .motto{display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:var(--leaf);color:#fff;font-weight:600;font-size:13px;padding:4px 11px 4px 9px;border-radius:99px;font-style:italic}
+.org .motto::before{content:"";width:8px;height:8px;border-radius:50%;background:#B7E4B9;font-style:normal}
+.state{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted)}
+.state i{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.state.done i{background:var(--muted)}
+.actions{display:flex;flex-direction:column;gap:10px}
+.actions .btn{display:flex;align-items:center;justify-content:center;gap:8px}
 button.notice{width:100%;font:inherit;color:inherit;cursor:pointer}
 </style>
 </head>
@@ -205,8 +211,12 @@ const DAYS=['Ням','Даваа','Мягмар','Лхагва','Пүрэв','Б
 const surveyOf = id => surveys.find(s=>s.id===id);
 const todayInsp = (carId, sid) => inspections.find(i=>i.carId===carId && i.surveyId===sid && dayKey(i.at)===dayKey(Date.now()));
 const surveyCars = s => s.carIds.map(id=>cars.find(c=>c.id===id)).filter(Boolean);
-const dateRange = s => s.start||s.end ? `${dfmt(s.start)||'…'} – ${dfmt(s.end)||'…'}` : 'Огноо тохируулаагүй';
-function surveyState(s){ const t=dayKey(Date.now()); if(s.end && t>s.end) return 'done'; if(s.start && t<s.start) return 'soon'; return 'active'; }
+const dateRange = s => `${dfmt(s.start)||'…'} – ${s.end?dfmt(s.end):'одоо'}`;
+function surveyState(s){ return s.end ? 'done' : 'active'; }
+const stateTag = s => surveyState(s)==='done' ? `<span class="state done"><i></i>Дууссан</span>` : `<span class="state"><i></i>Явагдаж байна</span>`;
+(function(){ if(load('vi.mig2',false)) return; const t=dayKey(Date.now()); // dates are now automatic: start = created, end = when "Судалгаа дууссан" is pressed
+  for(const s of surveys){ if(!s.start){ const d=inspections.filter(i=>i.surveyId===s.id).map(i=>dayKey(i.at)).sort()[0]; s.start=d||t; } if(s.end && s.end>=t) s.end=''; }
+  save(K.surveys,surveys); save('vi.mig2',true); })();
 let toastT; function toast(m){ const t=$('#toast'); t.textContent=m; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,3200); }
 function compress(file, max=720, q=.72){
   return new Promise((res,rej)=>{ const r=new FileReader(); r.onerror=rej; r.onload=()=>{ const img=new Image(); img.onerror=rej; img.onload=()=>{
@@ -241,8 +251,8 @@ function histRow(i){ const bad=i.items.filter(x=>x.s==='bad').length;
 /* ---- home: surveys + vehicle registry ---- */
 function renderHome(){
   const now=new Date();
-  bar('Машины өдөр тутмын үзлэг', `${DAYS[now.getDay()]} · ${fmt(now).slice(0,10)}`);
-  let h=`<div class="org"><div class="logo"><img src="${BRCC_LOGO}" alt="BRCC лого"></div><div style="min-width:0"><b>Биологийн Нөөцийг Хамгаалах Төв</b><span>Biological Resources Conservation Center · Хамтдаа оршихуй!</span></div></div>
+  bar('BRCC Car', `${DAYS[now.getDay()]}, ${fmt(now).slice(0,10)}`);
+  let h=`<section class="org" aria-label="Байгууллага"><div class="logo"><img src="${BRCC_LOGO}" alt="BRCC лого"></div><div style="min-width:0"><b>Биологийн Нөөцийг Хамгаалах Төв</b><span class="en">Biological Resources Conservation Center</span><span class="motto">Хамтдаа оршихуй!</span></div></section>
   ${syncBanner()}
   <div class="tabs" role="tablist" style="grid-template-columns:1fr 1fr 1fr">
     <button role="tab" aria-selected="${view.tab==='surveys'}" data-tab="surveys">Судалгаа</button>
@@ -256,7 +266,7 @@ function renderHome(){
       const pill = st==='done'?`<span class="pill" style="background:var(--line);color:var(--muted)">Дууссан</span>`: st==='soon'?`<span class="pill todo">Эхлээгүй</span>`:
         (sc.length&&done===sc.length?`<span class="pill ok">Өнөөдөр ${done}/${sc.length}</span>`:`<span class="pill todo">Өнөөдөр ${done}/${sc.length}</span>`);
       h+=`<article class="car"><div class="car-top"><div style="min-width:0"><div style="font-family:var(--font-display);font-weight:700;font-size:17px;line-height:1.25">${esc(s.name)}</div>
-        <div class="meta">${dateRange(s)} · ${sc.length} машин · ${inspections.filter(i=>i.surveyId===s.id).length} үзлэг</div></div>${pill}</div>
+        <div class="meta">${stateTag(s)}<br>${dateRange(s)} · ${sc.length} машин · ${inspections.filter(i=>i.surveyId===s.id).length} үзлэг</div></div>${st==='done'?'':pill}</div>
         <button class="btn" data-open="${s.id}">Нээх</button></article>`;
     }
     foot(`<button class="btn wide" id="addSurvey">+ Судалгаа нэмэх</button>`);
@@ -288,25 +298,25 @@ function renderSurvey(){
   bar(s.name, `${dateRange(s)} · <button class="title-edit" id="editS">засах</button>`, ()=>go({name:'home',tab:'surveys'}));
   $('#editS').onclick=()=>go({name:'surveyForm', id:s.id});
   const sc=surveyCars(s); const list=inspections.filter(i=>i.surveyId===s.id).sort((a,b)=>b.at-a.at);
+  const st=surveyState(s);
   let h=`<div class="tabs" role="tablist" style="grid-template-columns:1fr 1fr 1fr">
     <button role="tab" aria-selected="${view.tab==='cars'}" data-tab="cars">Өнөөдөр</button>
     <button role="tab" aria-selected="${view.tab==='hist'}" data-tab="hist">Түүх</button>
     <button role="tab" aria-selected="${view.tab==='sum'}" data-tab="sum">Тойм</button></div>`;
   if(view.tab==='cars'){
     const done=sc.filter(c=>todayInsp(c.id,s.id)).length;
-    const st=surveyState(s);
-    if(st!=='active') h+=`<div class="notice" style="border-left-color:var(--warn)">${st==='done'?'Энэ судалгаа дууссан байна.':'Энэ судалгаа хараахан эхлээгүй байна.'} Үзлэг хийж болно, гэхдээ огноогоо шалгана уу.</div>`;
-    if(sc.length) h+=`<div class="notice">Өнөөдөр <b>${done} / ${sc.length}</b> машин үзлэг хийгдсэн. Машинаа сонгоод үзлэгээ эхлүүлнэ үү.</div>`;
+    if(st==='done') h+=`<div class="notice" style="border-left-color:var(--muted)">Энэ судалгаа <b>${dfmt(s.end)}</b>-нд дууссан. Шинэ үзлэг хийхгүй. Өгөгдлөө “Тойм” хэсгээс ZIP-ээр авна.</div>`;
+    else if(sc.length) h+=`<div class="notice">Өнөөдөр <b>${done} / ${sc.length}</b> машин үзлэг хийгдсэн. Машинаа сонгоод үзлэгээ эхлүүлнэ үү.</div>`;
     else h+=`<div class="empty">Энэ судалгаанд машин нэмээгүй байна.<br>Доорх товчоор машинаа сонгоно уу.</div>`;
     for(const c of sc){
       const t=todayInsp(c.id,s.id); const bad=t?t.items.filter(i=>i.s==='bad').length:0;
-      const pill = !t?`<span class="pill todo">Өнөөдөр үзээгүй</span>`: bad?`<span class="pill bad">${bad} хэвийн бус</span>`:`<span class="pill ok">Үзсэн · хэвийн</span>`;
+      const pill = st==='done' ? '' : !t?`<span class="pill todo">Өнөөдөр үзээгүй</span>`: bad?`<span class="pill bad">${bad} хэвийн бус</span>`:`<span class="pill ok">Үзсэн · хэвийн</span>`;
       h+=`<article class="car"><div class="car-top"><div style="min-width:0"><span class="plate">${esc(c.plate)}</span>${c.example?'<span class="tag">Жишээ</span>':''}
         <div class="meta">${carMeta(c)}</div></div>${pill}</div>
-        <div class="row"><button class="btn" style="flex:1" data-start="${c.id}">${t?'Дахин үзлэг хийх':'Үзлэг эхлүүлэх'}</button>
-        <button class="btn ghost small" data-edit="${c.id}">Засах</button></div></article>`;
+        ${st==='done'?'':`<div class="row"><button class="btn" style="flex:1" data-start="${c.id}">${t?'Дахин үзлэг хийх':'Үзлэг эхлүүлэх'}</button>
+        <button class="btn ghost small" data-edit="${c.id}">Засах</button></div>`}</article>`;
     }
-    foot(`<button class="btn wide ghost" id="pickCars" style="background:var(--surface)">Машин нэмэх / хасах</button>`);
+    foot(st==='done'?'':`<button class="btn wide ghost" id="pickCars" style="background:var(--surface)">Машин нэмэх / хасах</button>`);
   } else if(view.tab==='hist'){
     if(!list.length) h+=`<div class="empty">Энэ судалгаанд үзлэг хийгдээгүй байна.</div>`;
     let last='';
@@ -328,10 +338,26 @@ function renderSurvey(){
         <div class="d" style="font-size:13.5px;color:var(--muted)">${esc(c.driver||'')}${span-d>0?` · ${span-d} өдөр алгассан`:''}${bad?` · <span style="color:var(--bad)">${bad} хэвийн бус тэмдэглэл</span>`:''}</div></div>`;
     }
     h+='</div>';
-    foot('');
+    const n=list.length;
+    h+=`<h2>Өгөгдөл авах</h2><div class="form actions">
+      <div style="font-size:14px;color:var(--muted)">${n} үзлэг · Excel хүснэгт (CSV), тайлан, селфи ба гэмтлийн зураг нэг ZIP файлд.</div>
+      <button class="btn" id="zipMail" ${n?'':'disabled'}>✉️ ZIP-ийг имэйлээр илгээх</button>
+      <button class="btn ghost" id="zipShare" ${n?'':'disabled'}>⬇️ ZIP утсанд хадгалах / хуваалцах</button>
+      <div class="err" id="zipMsg" hidden></div></div>`;
+    h+=`<div id="finZone"></div>`;
+    foot(st==='done'?`<button class="btn wide ghost" id="reopen" style="background:var(--surface)">Судалгааг дахин нээх</button>`:`<button class="btn wide" id="finish" style="background:var(--leaf)">✓ Судалгаа дууссан</button>`);
   }
   $('#app').innerHTML=h;
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>toSurvey(s.id,b.dataset.tab));
+  const zm=$('#zipMail'); if(zm) zm.onclick=()=>exportZip(s,'mail');
+  const zs=$('#zipShare'); if(zs) zs.onclick=()=>exportZip(s,'share');
+  const fin=$('#finish'); if(fin) fin.onclick=()=>{ const t=dayKey(Date.now());
+    $('#finZone').innerHTML=`<div class="notice" style="border-left-color:var(--leaf)">“${esc(s.name)}” судалгааг дуусгах уу? Дуусах огноо <b>${dfmt(t)}</b> гэж бичигдэнэ. Дараа нь шинэ үзлэг хийхгүй (хэрэгтэй бол дахин нээж болно).
+      <div class="row" style="margin-top:10px"><button class="btn small" id="finY" style="background:var(--leaf)">Тийм, дуусгах</button><button class="btn ghost small" id="finN">Болих</button></div></div>`;
+    $('#finZone').scrollIntoView({behavior:'smooth',block:'center'});
+    $('#finY').onclick=()=>{ s.end=t; save(K.surveys,surveys); toast('Судалгаа дууслаа. ZIP-ээ илгээхээ мартуузай.'); render(); };
+    $('#finN').onclick=()=>{ $('#finZone').innerHTML=''; }; };
+  const ro=$('#reopen'); if(ro) ro.onclick=()=>{ s.end=''; save(K.surveys,surveys); toast('Судалгаа дахин нээгдлээ'); render(); };
   document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>startInspection(b.dataset.start, s.id));
   bindCommon();
   const pc=$('#pickCars'); if(pc) pc.onclick=()=>go({name:'surveyForm', id:s.id});
@@ -347,15 +373,14 @@ function renderSurveyForm(){
   bar(editing?'Судалгаа засах':'Шинэ судалгаа','',back);
   $('#app').innerHTML=`<form class="form" novalidate>
     <div class="field"><label for="sname">Судалгааны нэр *</label><input type="text" id="sname" value="${esc(d.name)}" placeholder="Жишээ нь Хулан хүзүүвчлэх 2026" maxlength="80"><div class="err" id="snErr" hidden>Судалгааны нэрийг оруулна уу.</div></div>
-    <div class="grid2"><div class="field"><label for="sstart">Эхлэх огноо</label><input type="date" id="sstart" value="${esc(d.start)}" style="width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px;min-height:48px"></div>
-    <div class="field"><label for="send">Дуусах огноо</label><input type="date" id="send" value="${esc(d.end)}" style="width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px;min-height:48px"></div></div>
+    ${editing?`<div class="notice">Эхэлсэн: <b>${dfmt(s.start)}</b>${s.end?` · Дууссан: <b>${dfmt(s.end)}</b>`:' · Явагдаж байна'}<br><span style="color:var(--muted)">Огноо автоматаар бичигдэнэ. Дуусгахдаа судалгааны “Тойм” хэсгийн “Судалгаа дууссан” товчийг дарна.</span></div>`:`<div class="notice">Эхлэх огноо: <b>${dfmt(dayKey(Date.now()))}</b> (өнөөдөр, автоматаар). Дуусахад “Судалгаа дууссан” товч дарахад дуусах огноо бичигдэнэ.</div>`}
     <div class="field"><label>Судалгаанд явах машинууд</label><span class="hint">Бүртгэлээс сонгоно. Шинэ машин бол доороос нэмнэ.</span></div>
     <div style="display:flex;flex-direction:column;gap:8px">${cars.map(c=>`<label class="hist" style="cursor:pointer"><input type="checkbox" data-car="${c.id}" ${d.carIds.includes(c.id)?'checked':''} style="width:22px;height:22px;flex:none">
       <div class="t"><span class="plate" style="font-size:14px;padding:0 6px">${esc(c.plate)}</span><div class="d">${esc([c.make,c.model].filter(Boolean).join(' '))} · ${esc(c.driver||'')}</div></div></label>`).join('')||'<div class="empty">Бүртгэлтэй машин алга.</div>'}</div>
     <button type="button" class="btn ghost small" id="newCar">+ Шинэ машин бүртгэх</button>
     ${editing?`<div id="delZone"><button type="button" class="btn ghost small" id="delS" style="color:var(--bad)">Судалгааг устгах</button></div>`:''}
   </form>`;
-  $('#sname').oninput=e=>d.name=e.target.value; $('#sstart').onchange=e=>d.start=e.target.value; $('#send').onchange=e=>d.end=e.target.value;
+  $('#sname').oninput=e=>d.name=e.target.value;
   document.querySelectorAll('[data-car]').forEach(cb=>cb.onchange=()=>{ const id=cb.dataset.car; d.carIds=cb.checked?[...new Set([...d.carIds,id])]:d.carIds.filter(x=>x!==id); });
   $('#newCar').onclick=()=>go({name:'carForm', back:{name:'surveyForm', id:view.id}, addToDraft:true});
   if(editing) $('#delS').onclick=()=>{
@@ -367,8 +392,7 @@ function renderSurveyForm(){
   foot(`<button class="btn wide" id="saveS">${editing?'Хадгалах':'Судалгаа үүсгэх'}</button>`);
   $('#saveS').onclick=()=>{
     const name=d.name.trim(); if(!name){ $('#snErr').hidden=false; $('#sname').focus(); return; }
-    if(d.start&&d.end&&d.end<d.start){ toast('Дуусах огноо эхлэх огнооноос өмнө байна.'); return; }
-    const rec={id:editing?s.id:uid(), name, start:d.start, end:d.end, carIds:d.carIds};
+    const rec={id:editing?s.id:uid(), name, start:editing?s.start:dayKey(Date.now()), end:editing?(s.end||''):'', carIds:d.carIds};
     surveys = editing ? surveys.map(x=>x.id===s.id?rec:x) : [...surveys, rec];
     if(save(K.surveys,surveys)){ sDraft=null; toast(editing?'Хадгалагдлаа':'Судалгаа үүслээ'); toSurvey(rec.id); }
   };
@@ -616,6 +640,50 @@ function bindSettings(){
   $('#stest').onclick=async()=>{ const u=val()||DEFAULT_SHEET_URL; if(!u||!valid(u)) return msg('Зөв холбоос оруулна уу.'); msg('Шалгаж байна…',true);
     try{ const j=await post(u,{action:'ping'},30000); msg(`Холбогдлоо: “${j.sheet}” Sheet.`,true); }catch(e){ msg('Холбогдсонгүй: '+e.message); } };
   $('#snow').onclick=()=>syncAll(true);
+}
+/* ---- Survey export: one ZIP (CSV table + text report + photos), by email via Apps Script or saved/shared on the phone ---- */
+function loadJSZip(){ return window.JSZip ? Promise.resolve(window.JSZip) : new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='js/jszip.min.js'; sc.onload=()=>res(window.JSZip); sc.onerror=()=>rej(new Error('ZIP сан ачаалсангүй')); document.head.appendChild(sc); }); }
+const csvCell = v => { const t=String(v??''); return /[",\n;]/.test(t) ? '"'+t.replace(/"/g,'""')+'"' : t; };
+async function buildZip(s){
+  const JSZip=await loadJSZip(); const zip=new JSZip();
+  const list=inspections.filter(i=>i.surveyId===s.id).sort((a,b)=>a.at-b.at);
+  const H=headers(); const rows=[H.map(csvCell).join(',')];
+  const rep=[`BRCC · Биологийн Нөөцийг Хамгаалах Төв`, `Судалгаа: ${s.name}`, `Хугацаа: ${dateRange(s)}`, `Нийт үзлэг: ${list.length}`, ''];
+  for(const i of list){
+    const r=sheetRow(i,s); rows.push(H.map(h=>csvCell(r[h])).join(','));
+    rep.push('------------------------------', report(i), '');
+    const base=`${dayKey(i.at)}_${(i.plate.match(/\d+/)||['car'])[0]}_${i.id.slice(-5)}`; // ASCII names: open cleanly on every computer
+    if(i.selfie && i.selfie.startsWith('data:')) zip.file(`photos/${base}_selfie.jpg`, i.selfie.split(',')[1], {base64:true});
+    for(const x of i.items) if(x.photo && x.photo.startsWith('data:')) zip.file(`photos/${base}_${x.id}.jpg`, x.photo.split(',')[1], {base64:true});
+  }
+  zip.file('uzleg.csv', '﻿'+rows.join('\r\n'));
+  zip.file('tailan.txt', rep.join('\r\n'));
+  const name=`${sheetName(s.name).replace(/\s+/g,'_')}_${dayKey(Date.now())}.zip`;
+  return {zip, name, count:list.length};
+}
+let zipBusy=false;
+async function exportZip(s, mode){
+  if(zipBusy) return; const msg=$('#zipMsg'); const say=(t,ok)=>{ if(msg){ msg.hidden=false; msg.textContent=t; msg.style.color=ok?'var(--ok)':''; } };
+  zipBusy=true; say('ZIP бэлдэж байна…',true);
+  try{
+    const {zip,name,count}=await buildZip(s);
+    if(mode==='mail'){
+      const url=sheetUrl();
+      if(!url){ say('Имэйлээр илгээхэд Google Sheet холбоос хэрэгтэй (Тохиргоо). Одоохондоо “утсанд хадгалах” товчоор авна уу.'); return; }
+      if(!navigator.onLine){ say('Интернэт алга. Сүлжээнд орсон хойноо дахин дарна уу.'); return; }
+      say('Имэйлээр илгээж байна… (зураг ихтэй бол хэдэн минут болно)',true);
+      const data=await zip.generateAsync({type:'base64'});
+      const body=`BRCC · Биологийн Нөөцийг Хамгаалах Төв\nСудалгаа: ${s.name}\nХугацаа: ${dateRange(s)}\nНийт үзлэг: ${count}\n\nZIP дотор: uzleg.csv (Excel-ээр нээнэ), tailan.txt (тайлан), photos/ (селфи, гэмтлийн зураг).`;
+      const j=await post(url,{action:'email', name, folder:s.name, subject:`Машины үзлэг: ${s.name} (${dateRange(s)})`, body, data}, 300000);
+      say(`Илгээгдлээ: ${j.to||'data.brcc@gmail.com'}`,true); toast('ZIP имэйлээр илгээгдлээ');
+    } else {
+      const blob=await zip.generateAsync({type:'blob'}); const file=new File([blob], name, {type:'application/zip'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file], title:name}); say('Бэлэн боллоо.',true); return; }catch(e){ if(e.name==='AbortError'){ say(''); msg&&(msg.hidden=true); return; } } }
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000);
+      say('ZIP татагдлаа.',true);
+    }
+  }catch(e){ say('Амжилтгүй: '+e.message); }
+  finally{ zipBusy=false; }
 }
 window.addEventListener('online', ()=>syncAll());
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') syncAll(); });
