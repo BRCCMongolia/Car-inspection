@@ -457,7 +457,12 @@ function renderInspect(){
     $('#app').innerHTML=h;
     const answered=()=>d.items.filter(r=>r.s && (r.s==='ok'||r.note.trim())).length;
     foot(`<span class="count" id="cnt">${answered()} / ${ITEMS.length} бөглөсөн</span><button class="btn" id="next">Үргэлжлүүлэх</button>`);
-    document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{ const r=d.items[+b.dataset.i]; r.s=b.dataset.s; const y=window.scrollY; render(); window.scrollTo(0,y); if(r.s==='bad'){ const t=$('#note-'+b.dataset.i); t&&t.focus({preventScroll:true}); } });
+    document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; const r=d.items[i]; r.s=b.dataset.s; const y=window.scrollY; render(); window.scrollTo(0,y);
+      if(r.s==='bad'){ const t=$('#note-'+i); t&&t.focus({preventScroll:true}); return; }
+      // Хэвийн: дараагийн бөглөөгүй асуулт руу автоматаар гүйлгэнэ
+      let n=d.items.findIndex((x,k)=>k>i && x.s===null); if(n<0) n=d.items.findIndex(x=>x.s===null);
+      const el = n>=0 ? document.getElementById('it-'+ITEMS[n].id) : $('#next');
+      if(el) setTimeout(()=>el.scrollIntoView({behavior:'smooth', block: n>=0?'center':'end'}), 60); });
     document.querySelectorAll('[data-note]').forEach(t=>t.oninput=()=>{ d.items[+t.dataset.note].note=t.value; $('#cnt').textContent=`${answered()} / ${ITEMS.length} бөглөсөн`; });
     document.querySelectorAll('[data-photo]').forEach(inp=>inp.onchange=async()=>{ const f=inp.files[0]; if(!f) return; try{ d.items[+inp.dataset.photo].photo=await compress(f,640,.65); const y=window.scrollY; render(); window.scrollTo(0,y);}catch(e){ toast('Зургийг уншиж чадсангүй. Дахин оролдоно уу.'); } });
     $('#allOk').onclick=()=>{ d.items.forEach(r=>{ if(r.s===null) r.s='ok'; }); const y=window.scrollY; render(); window.scrollTo(0,y); };
