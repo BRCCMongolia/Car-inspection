@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Машины үзлэг</title>
+<meta name="description" content="БНХТ (BRCC) · Машины өдөр тутмын үзлэг">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Машины үзлэг">
+<meta name="theme-color" content="#1E5BC6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap">
+<style>
+/* Layout: one narrow phone column; blue app bar like the paper form's header band, cards only for vehicles */
+:root{
+  --brand:#1E5BC6; --brand-ink:#ffffff; --brand-deep:#163F8C;
+  --bg:#F3F5F9; --surface:#ffffff; --fg:#141821; --muted:#5D6678; --line:#D8DDE7;
+  --ok:#17804A; --ok-bg:#E3F4EA; --bad:#C2341F; --bad-bg:#FBE9E5; --warn:#9A6200; --warn-bg:#FFF3D6;
+  --font-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --font-body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --brand:#3B76E0; --brand-deep:#1B3E80; --bg:#0F131A; --surface:#181E28; --fg:#E8ECF3; --muted:#9AA4B6; --line:#2C3443;
+  --ok:#4CC584; --ok-bg:#15301F; --bad:#FF7B66; --bad-bg:#3A1A15; --warn:#F2B84B; --warn-bg:#352812; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --brand:#3B76E0; --brand-deep:#1B3E80; --bg:#0F131A; --surface:#181E28; --fg:#E8ECF3; --muted:#9AA4B6; --line:#2C3443;
+  --ok:#4CC584; --ok-bg:#15301F; --bad:#FF7B66; --bad-bg:#3A1A15; --warn:#F2B84B; --warn-bg:#352812; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--brand)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--brand);color:var(--brand-ink);
+  padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar-in{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.bar img{width:40px;height:40px;border-radius:10px;flex:none;box-shadow:0 0 0 1.5px rgba(255,255,255,.35)}
+.bar h1{font-family:var(--font-display);font-size:16px;font-weight:700;margin:0;line-height:1.2;text-wrap:balance;letter-spacing:.01em}
+.bar .sub{font-size:13px;opacity:.85}
+.bar .back{background:none;border:0;color:inherit;font-size:24px;line-height:1;padding:4px 8px 4px 0}
+main{max-width:560px;margin:0 auto;padding-block:16px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+h2{font-family:var(--font-display);font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:8px 0 0}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.tabs button{border:0;background:none;padding:10px;border-radius:9px;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--brand);color:var(--brand-ink)}
+.car{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.car-top{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.plate{display:inline-block;font-family:var(--font-display);font-weight:700;font-size:18px;letter-spacing:.06em;border:2px solid var(--fg);border-radius:6px;padding:2px 10px;background:var(--surface)}
+.meta{color:var(--muted);font-size:14px;margin-top:6px}
+.pill{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.bad{background:var(--bad-bg);color:var(--bad)} .pill.todo{background:var(--warn-bg);color:var(--warn)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:12px;padding:13px 18px;font-weight:600;background:var(--brand);color:var(--brand-ink);min-height:48px}
+.btn.wide{width:100%}
+.btn.ghost{background:transparent;color:var(--brand);border:1.5px solid var(--line)}
+.btn.danger{background:var(--bad);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.small{padding:8px 12px;min-height:38px;font-size:14px}
+.empty{background:var(--surface);border:1.5px dashed var(--line);border-radius:14px;padding:24px;text-align:center;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:600;font-size:14px}
+.field .hint{font-size:13px;color:var(--muted)}
+input[type=text],input[type=number],select,textarea{width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px;min-height:48px}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);outline:none}
+textarea{min-height:64px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid2>*{min-width:0}
+.form{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.err{color:var(--bad);font-size:13.5px;font-weight:500}
+.steps{display:flex;gap:6px}
+.steps span{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.steps span.on{background:var(--brand)}
+.notice{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:10px;padding:12px 14px;font-size:14px}
+/* checklist */
+.item{border-bottom:1px solid var(--line);padding-block:14px;display:flex;flex-direction:column;gap:10px}
+.item:last-child{border-bottom:0}
+.item-head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.item-title{font-weight:500;min-width:0}
+.item-title .n{color:var(--muted);font-variant-numeric:tabular-nums;margin-right:4px}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--warn);background:var(--warn-bg);border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;flex:none;width:176px}
+.seg button{border:0;background:var(--surface);padding:8px 4px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button.ok[aria-pressed="true"]{background:var(--ok);color:#fff}
+.seg button.bad[aria-pressed="true"]{background:var(--bad);color:#fff}
+.item.isbad{background:var(--bad-bg);margin-inline:-16px;padding-inline:16px}
+.photo-btn{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--brand);border:1.5px dashed var(--line);border-radius:10px;padding:8px 12px;background:var(--surface);cursor:pointer}
+.photo-btn input{display:none}
+.thumb{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.sticky-foot{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);z-index:6;
+  padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sticky-foot .in{max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.sticky-foot .count{font-size:13.5px;color:var(--muted);flex:1;font-variant-numeric:tabular-nums}
+.selfie-box{border:2px dashed var(--brand);border-radius:16px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;background:var(--surface)}
+.selfie-box img{width:100%;max-width:340px;border-radius:12px;aspect-ratio:3/4;object-fit:cover}
+.selfie-box svg{width:120px;height:auto}
+.fuel{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.fuel button{border:1.5px solid var(--line);background:var(--surface);border-radius:9px;padding:9px 0;font-weight:600;font-size:14px}
+.fuel button[aria-pressed="true"]{background:var(--brand);color:#fff;border-color:var(--brand)}
+.hist{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center;text-align:left;width:100%}
+.hist img{width:52px;height:52px;border-radius:8px;object-fit:cover;flex:none;background:var(--line)}
+.hist .t{flex:1;min-width:0}
+.hist .d{font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14.5px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.badlist{display:flex;flex-direction:column;gap:10px}
+.badlist .b{background:var(--bad-bg);border-radius:10px;padding:10px 12px}
+.badlist .b strong{color:var(--bad)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+.title-edit{background:none;border:0;color:inherit;opacity:.8;font-size:13px;padding:0;text-decoration:underline}
+@media (max-width:420px){.item-head{flex-direction:column;align-items:stretch}.seg{width:100%}.seg button{padding:10px 4px}.grid2{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:no-preference){.btn,.seg button{transition:background .15s,color .15s}}
+.org{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.org .logo{background:#fff;border-radius:10px;padding:6px 8px;flex:none;display:flex}
+.org .logo img{height:60px;width:auto;max-width:96px;object-fit:contain;display:block}
+.org b{display:block;font-family:var(--font-display);font-size:14.5px;line-height:1.3;text-wrap:balance}
+.org span{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+button.notice{width:100%;font:inherit;color:inherit;cursor:pointer}
+</style>
+</head>
+<body>
+<header class="bar"><div class="bar-in" id="bar"></div></header>
+<main id="app"></main>
+<div id="foot"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#1490E3"/><g transform="translate(10 16) scale(1.6)" fill="#0B0D12"><rect x="5" y="0" width="40" height="14" rx="2.2"/><rect x="8" y="2.4" width="34" height="9" rx="1.8" fill="#1490E3"/><rect x="22.5" y="2.4" width="5" height="1.6"/><path d="M12,-0.7 C12,-4.6 16,-5.8 25,-5.8 C34,-5.8 38,-4.6 38,-0.7 Z"/><rect x="10" y="-0.9" width="30" height=".6" rx=".3"/><rect x="2.4" y="-0.2" width="1.8" height="18.4" rx=".5" stroke="#1490E3" stroke-width=".35"/><path d="M1.7,-2.6 L5.3,-2.6 C5.9,-2.6 6.1,-2.2 6.1,-1.6 L6.1,0.4 L1.7,0.4 Z"/><rect x="-1.2" y="8" width="3.4" height="4.2" rx=".8"/><rect x="2" y="9.4" width="3.2" height=".8"/><rect x="46.6" y="8" width="3.4" height="4.2" rx=".8"/><rect x="44.8" y="9.4" width="2" height=".8"/><rect x="-.5" y="31.5" width="9" height="16" rx="2.4" stroke="#1490E3" stroke-width=".45"/><rect x="41.5" y="31.5" width="9" height="16" rx="2.4" stroke="#1490E3" stroke-width=".45"/><path d="M1 37 l1.4 .7 M1 39.5 l1.4 .7 M1 42 l1.4 .7 M1 44.5 l1.4 .7 M49 37 l-1.4 .7 M49 39.5 l-1.4 .7 M49 42 l-1.4 .7 M49 44.5 l-1.4 .7 " fill="none" stroke="#1490E3" stroke-width=".6" stroke-linecap="round"/><path d="M4.6 37.5 l0.9 .5 l-0.9 .5 M4.6 41 l0.9 .5 l-0.9 .5 M4.6 44.5 l0.9 .5 l-0.9 .5 M45.4 37.5 l-0.9 .5 l0.9 .5 M45.4 41 l-0.9 .5 l0.9 .5 M45.4 44.5 l-0.9 .5 l0.9 .5 " fill="none" stroke="#1490E3" stroke-width=".5" stroke-linecap="round"/><path d="M4 17 Q4.6 13.4 8 13.2 L42 13.2 Q45.4 13.4 46 17 L45 27 L5 27 Z"/><path d="M5.6 16.4 Q6.4 14.8 8.6 14.7 L41.4 14.7 Q43.6 14.8 44.4 16.4" fill="none" stroke="#1490E3" stroke-width=".5"/><path d="M-1.8 27 L-1.2 20.2 Q-1 18.4 1.2 18.3 L6.6 18 L7 27 Z" stroke="#1490E3" stroke-width=".5"/><path d="M51.8 27 L51.2 20.2 Q51 18.4 48.8 18.3 L43.4 18 L43 27 Z" stroke="#1490E3" stroke-width=".5"/><path d="M-.6 20.6 Q-.4 19.5 1.3 19.4 L5.8 19.2 M50.6 20.6 Q50.4 19.5 48.7 19.4 L44.2 19.2" fill="none" stroke="#1490E3" stroke-width=".4"/><circle cx="11" cy="21.4" r="3.6" fill="#1490E3"/><circle cx="11" cy="21.4" r="3"/><circle cx="11" cy="21.4" r="2.25" fill="#1490E3"/><circle cx="39" cy="21.4" r="3.6" fill="#1490E3"/><circle cx="39" cy="21.4" r="3"/><circle cx="39" cy="21.4" r="2.25" fill="#1490E3"/><path d="M9.6 20.4 Q10.1 19.5 11.2 19.4 M37.6 20.4 Q38.1 19.5 39.2 19.4" fill="none" stroke="#0B0D12" stroke-width=".5" stroke-linecap="round"/><circle cx="11" cy="25.6" r=".8" fill="none" stroke="#1490E3" stroke-width=".45"/><circle cx="39" cy="25.6" r=".8" fill="none" stroke="#1490E3" stroke-width=".45"/><rect x="15.60" y="18.6" width="1.75" height="9.4" rx=".85" fill="#1490E3"/><rect x="18.35" y="18.6" width="1.75" height="9.4" rx=".85" fill="#1490E3"/><rect x="21.10" y="18.6" width="1.75" height="9.4" rx=".85" fill="#1490E3"/><rect x="23.85" y="18.6" width="1.75" height="9.4" rx=".85" fill="#1490E3"/><rect x="26.60" y="18.6" width="1.75" height="9.4" rx=".85" fill="#1490E3"/><rect x="29.35" y="18.6" width="1.75" height="9.4" rx=".85" fill="#1490E3"/><rect x="32.10" y="18.6" width="1.75" height="9.4" rx=".85" fill="#1490E3"/><path d="M12.6 27.6 L14.4 20.6 Q15.2 18.6 17.4 18.6 L32.6 18.6 Q34.8 18.6 35.6 20.6 L37.4 27.6" fill="none" stroke="#1490E3" stroke-width="3" stroke-linejoin="round"/><path d="M12.6 27.6 L14.4 20.6 Q15.2 18.6 17.4 18.6 L32.6 18.6 Q34.8 18.6 35.6 20.6 L37.4 27.6" fill="none" stroke="#0B0D12" stroke-width="1.8" stroke-linejoin="round"/><rect x="22.6" y="17.8" width="4.8" height="1.4" rx=".3" fill="#1490E3"/><rect x="21.4" y="24.8" width="7.2" height="3.6" rx=".6" stroke="#1490E3" stroke-width=".45"/><path d="M23 26.6 L27 26.6" stroke="#1490E3" stroke-width=".45"/><path d="M-1.5 28 L51.5 28 L50.6 34.2 L-.6 34.2 Z" stroke="#1490E3" stroke-width=".5"/><path d="M-.4 29.4 L13 29.4 M37 29.4 L50.4 29.4" stroke="#1490E3" stroke-width=".35"/><circle cx="5.8" cy="31.6" r="1.35" fill="none" stroke="#1490E3" stroke-width=".55"/><circle cx="44.2" cy="31.6" r="1.35" fill="none" stroke="#1490E3" stroke-width=".55"/><rect x="17" y="31.6" width="16" height="3.4" rx=".4" stroke="#1490E3" stroke-width=".5"/></g></svg>`;
+const BRCC_LOGO = 'img/brcc.png';
+const ICON = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ICON_SVG);
+
+/* ---- Checklist: items 2–18 from the paper form (radio station removed); "suggest" = new proposals ---- */
+const ITEMS = [
+  {id:'brake', t:'Ажлын ба зогсоолын тормоз'},
+  {id:'lights', t:'Гэрэл, дохио'},
+  {id:'glass', t:'Цонх, урд шил, толь'},
+  {id:'steer', t:'Жолоодлогын механизм'},
+  {id:'flag', t:'Туг, маяк, тууз'},
+  {id:'reverse', t:'Ухрахын сигнал'},
+  {id:'belts', t:'Суудлын бүсний тоо, ажиллагаа'},
+  {id:'horn', t:'Дуут дохио'},
+  {id:'fire', t:'Галын хор'},
+  {id:'fluids', t:'Шингэний түвшин'},
+  {id:'wheels', t:'Дугуйнуудын байдал, шилька боолтууд'},
+  {id:'wipers', t:'Шил арчигч'},
+  {id:'ac', t:'Айр кондишн, паар'},
+  {id:'damage', t:'Бохирдол, гэмтэл'},
+  {id:'dash', t:'Хянах самбарын ажиллагаа'},
+  {id:'chocks', t:'Дугуйны ивүүр байгаа эсэх'},
+  {id:'firstaid', t:'Анхны тусламжийн иж бүрдэл'},
+  {id:'pressure', t:'Дугуйн хийн даралт', suggest:true},
+  {id:'spare', t:'Сэлбэг дугуй, домкрат, баллон түлхүүр', suggest:true},
+  {id:'leaks', t:'Тос, шингэн дусалж байгаа эсэх (машин доор)', suggest:true},
+  {id:'triangle', t:'Аюулын гурвалжин тэмдэг', suggest:true},
+  {id:'docs', t:'Бичиг баримт (гэрчилгээ, даатгал, оношлогоо)', suggest:true},
+  {id:'winter', t:'Чирэх трос, өвлийн хэрэгсэл', suggest:true},
+];
+const FUEL = ['¼-с бага','¼','½','¾','Дүүрэн'];
+
+/* ---- storage (this device only) ---- */
+const K = {cars:'vi.cars', insp:'vi.inspections', name:'vi.name', seeded:'vi.seeded', surveys:'vi.surveys'};
+function load(k, d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch(e){return d;} }
+function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true;}catch(e){ toast('Төхөөрөмжийн санах ой дүүрлээ. Хуучин үзлэгийн түүхээс устгана уу.'); return false;} }
+let cars = load(K.cars, []);
+let inspections = load(K.insp, []);
+let surveys = load(K.surveys, null);
+if (!load(K.seeded,false) && cars.length===0){
+  cars=[{id:'ex1', plate:'0000 УБА', make:'Toyota', model:'Land Cruiser 200', year:'2016', color:'Цагаан', driver:'Жишээ жолооч', example:true}];
+  save(K.cars,cars); save(K.seeded,true);
+}
+if (!surveys){ // first run of the survey version: put existing cars and inspections under one survey
+  const y=new Date().getFullYear();
+  surveys=[{id:'s1', name:'Хулан хүзүүвчлэх '+y, start:'', end:'', carIds:cars.map(c=>c.id)}];
+  inspections=inspections.map(i=>i.surveyId?i:{...i, surveyId:'s1'});
+  save(K.surveys,surveys); save(K.insp,inspections);
+}
+
+/* ---- helpers ---- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const dayKey = d => { const x=new Date(d); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); };
+const fmt = d => { const x=new Date(d); return `${x.getFullYear()}.${String(x.getMonth()+1).padStart(2,'0')}.${String(x.getDate()).padStart(2,'0')} ${String(x.getHours()).padStart(2,'0')}:${String(x.getMinutes()).padStart(2,'0')}`; };
+const dfmt = k => k ? k.replace(/-/g,'.') : '';
+const DAYS=['Ням','Даваа','Мягмар','Лхагва','Пүрэв','Баасан','Бямба'];
+const surveyOf = id => surveys.find(s=>s.id===id);
+const todayInsp = (carId, sid) => inspections.find(i=>i.carId===carId && i.surveyId===sid && dayKey(i.at)===dayKey(Date.now()));
+const surveyCars = s => s.carIds.map(id=>cars.find(c=>c.id===id)).filter(Boolean);
+const dateRange = s => s.start||s.end ? `${dfmt(s.start)||'…'} – ${dfmt(s.end)||'…'}` : 'Огноо тохируулаагүй';
+function surveyState(s){ const t=dayKey(Date.now()); if(s.end && t>s.end) return 'done'; if(s.start && t<s.start) return 'soon'; return 'active'; }
+let toastT; function toast(m){ const t=$('#toast'); t.textContent=m; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,3200); }
+function compress(file, max=720, q=.72){
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onerror=rej; r.onload=()=>{ const img=new Image(); img.onerror=rej; img.onload=()=>{
+    const s=Math.min(1,max/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.round(img.width*s); c.height=Math.round(img.height*s);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',q)); }; img.src=r.result; }; r.readAsDataURL(file); });
+}
+
+/* ---- router ---- */
+let view = {name:'home', tab:'surveys'};
+function go(v){ view=v; render(); window.scrollTo(0,0); }
+const toSurvey = (sid, tab='cars') => go(sid&&surveyOf(sid) ? {name:'survey', id:sid, tab} : {name:'home', tab:'surveys'});
+
+function bar(title, sub, back){
+  $('#bar').innerHTML = (back?`<button class="back" id="backBtn" aria-label="Буцах">←</button>`:`<img src="${ICON}" alt="">`)+
+    `<div style="min-width:0"><h1>${esc(title)}</h1>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
+  if(back) $('#backBtn').onclick=back;
+}
+function foot(html){ $('#foot').innerHTML = html?`<div class="sticky-foot"><div class="in">${html}</div></div>`:''; }
+
+function render(){
+  ({home:renderHome, survey:renderSurvey, surveyForm:renderSurveyForm, carForm:renderCarForm, inspect:renderInspect, detail:renderDetail})[view.name]();
+}
+function carMeta(c){ return `${esc([c.make,c.model].filter(Boolean).join(' '))}${c.year?' · '+esc(c.year):''}${c.color?' · '+esc(c.color):''}<br>Жолооч: ${esc(c.driver||'—')}`; }
+function bindCommon(){
+  document.querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>go({name:'detail',id:b.dataset.detail}));
+  document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>go({name:'carForm',id:b.dataset.edit, back:view}));
+}
+function histRow(i){ const bad=i.items.filter(x=>x.s==='bad').length;
+  return `<button class="hist" data-detail="${i.id}"><img src="${i.selfie||''}" alt=""><div class="t"><span class="plate" style="font-size:14px;padding:0 6px">${esc(i.plate)}</span>
+    <div class="d">${fmt(i.at)} · ${esc(i.driver)}</div></div>${bad?`<span class="pill bad">${bad} хэвийн бус</span>`:`<span class="pill ok">Хэвийн</span>`}</button>`; }
+
+/* ---- home: surveys + vehicle registry ---- */
+function renderHome(){
+  const now=new Date();
+  bar('Машины өдөр тутмын үзлэг', `${DAYS[now.getDay()]} · ${fmt(now).slice(0,10)}`);
+  let h=`<div class="org"><div class="logo"><img src="${BRCC_LOGO}" alt="BRCC лого"></div><div style="min-width:0"><b>Биологийн Нөөцийг Хамгаалах Төв</b><span>Biological Resources Conservation Center · Хамтдаа оршихуй!</span></div></div>
+  ${syncBanner()}
+  <div class="tabs" role="tablist" style="grid-template-columns:1fr 1fr 1fr">
+    <button role="tab" aria-selected="${view.tab==='surveys'}" data-tab="surveys">Судалгаа</button>
+    <button role="tab" aria-selected="${view.tab==='cars'}" data-tab="cars">Машинууд</button>
+    <button role="tab" aria-selected="${view.tab==='settings'}" data-tab="settings">Тохиргоо</button></div>`;
+  if(view.tab==='surveys'){
+    if(!surveys.length) h+=`<div class="empty">Судалгаа үүсгээгүй байна.<br>Доорх товчоор эхний судалгаагаа нэмнэ үү.</div>`;
+    const order={active:0,soon:1,done:2};
+    for(const s of [...surveys].sort((a,b)=>order[surveyState(a)]-order[surveyState(b)])){
+      const sc=surveyCars(s); const done=sc.filter(c=>todayInsp(c.id,s.id)).length; const st=surveyState(s);
+      const pill = st==='done'?`<span class="pill" style="background:var(--line);color:var(--muted)">Дууссан</span>`: st==='soon'?`<span class="pill todo">Эхлээгүй</span>`:
+        (sc.length&&done===sc.length?`<span class="pill ok">Өнөөдөр ${done}/${sc.length}</span>`:`<span class="pill todo">Өнөөдөр ${done}/${sc.length}</span>`);
+      h+=`<article class="car"><div class="car-top"><div style="min-width:0"><div style="font-family:var(--font-display);font-weight:700;font-size:17px;line-height:1.25">${esc(s.name)}</div>
+        <div class="meta">${dateRange(s)} · ${sc.length} машин · ${inspections.filter(i=>i.surveyId===s.id).length} үзлэг</div></div>${pill}</div>
+        <button class="btn" data-open="${s.id}">Нээх</button></article>`;
+    }
+    foot(`<button class="btn wide" id="addSurvey">+ Судалгаа нэмэх</button>`);
+  } else if(view.tab==='settings'){
+    h+=renderSettings(); foot('');
+  } else {
+    h+=`<div class="notice">Энд бүртгэсэн машинаа аль ч судалгаанд дахин бичилгүй сонгож нэмнэ.</div>`;
+    if(!cars.length) h+=`<div class="empty">Бүртгэлтэй машин алга.</div>`;
+    for(const c of cars){
+      const n=surveys.filter(s=>s.carIds.includes(c.id)).length;
+      h+=`<article class="car"><div class="car-top"><div style="min-width:0"><span class="plate">${esc(c.plate)}</span>${c.example?'<span class="tag">Жишээ</span>':''}
+        <div class="meta">${carMeta(c)}</div></div><span class="pill" style="background:var(--line);color:var(--muted)">${n} судалгаа</span></div>
+        <button class="btn ghost small" data-edit="${c.id}">Засах</button></article>`;
+    }
+    foot(`<button class="btn wide" id="addCar">+ Машин нэмэх</button>`);
+  }
+  $('#app').innerHTML=h;
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>go({name:'home',tab:b.dataset.tab}));
+  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>toSurvey(b.dataset.open));
+  bindCommon();
+  const as=$('#addSurvey'); if(as) as.onclick=()=>go({name:'surveyForm'});
+  const ac=$('#addCar'); if(ac) ac.onclick=()=>go({name:'carForm', back:view});
+  if(view.tab==='settings') bindSettings();
+}
+
+/* ---- one survey: today's cars, history, summary ---- */
+function renderSurvey(){
+  const s=surveyOf(view.id); if(!s) return go({name:'home',tab:'surveys'});
+  bar(s.name, `${dateRange(s)} · <button class="title-edit" id="editS">засах</button>`, ()=>go({name:'home',tab:'surveys'}));
+  $('#editS').onclick=()=>go({name:'surveyForm', id:s.id});
+  const sc=surveyCars(s); const list=inspections.filter(i=>i.surveyId===s.id).sort((a,b)=>b.at-a.at);
+  let h=`<div class="tabs" role="tablist" style="grid-template-columns:1fr 1fr 1fr">
+    <button role="tab" aria-selected="${view.tab==='cars'}" data-tab="cars">Өнөөдөр</button>
+    <button role="tab" aria-selected="${view.tab==='hist'}" data-tab="hist">Түүх</button>
+    <button role="tab" aria-selected="${view.tab==='sum'}" data-tab="sum">Тойм</button></div>`;
+  if(view.tab==='cars'){
+    const done=sc.filter(c=>todayInsp(c.id,s.id)).length;
+    const st=surveyState(s);
+    if(st!=='active') h+=`<div class="notice" style="border-left-color:var(--warn)">${st==='done'?'Энэ судалгаа дууссан байна.':'Энэ судалгаа хараахан эхлээгүй байна.'} Үзлэг хийж болно, гэхдээ огноогоо шалгана уу.</div>`;
+    if(sc.length) h+=`<div class="notice">Өнөөдөр <b>${done} / ${sc.length}</b> машин үзлэг хийгдсэн. Машинаа сонгоод үзлэгээ эхлүүлнэ үү.</div>`;
+    else h+=`<div class="empty">Энэ судалгаанд машин нэмээгүй байна.<br>Доорх товчоор машинаа сонгоно уу.</div>`;
+    for(const c of sc){
+      const t=todayInsp(c.id,s.id); const bad=t?t.items.filter(i=>i.s==='bad').length:0;
+      const pill = !t?`<span class="pill todo">Өнөөдөр үзээгүй</span>`: bad?`<span class="pill bad">${bad} хэвийн бус</span>`:`<span class="pill ok">Үзсэн · хэвийн</span>`;
+      h+=`<article class="car"><div class="car-top"><div style="min-width:0"><span class="plate">${esc(c.plate)}</span>${c.example?'<span class="tag">Жишээ</span>':''}
+        <div class="meta">${carMeta(c)}</div></div>${pill}</div>
+        <div class="row"><button class="btn" style="flex:1" data-start="${c.id}">${t?'Дахин үзлэг хийх':'Үзлэг эхлүүлэх'}</button>
+        <button class="btn ghost small" data-edit="${c.id}">Засах</button></div></article>`;
+    }
+    foot(`<button class="btn wide ghost" id="pickCars" style="background:var(--surface)">Машин нэмэх / хасах</button>`);
+  } else if(view.tab==='hist'){
+    if(!list.length) h+=`<div class="empty">Энэ судалгаанд үзлэг хийгдээгүй байна.</div>`;
+    let last='';
+    for(const i of list){ const k=dayKey(i.at); if(k!==last){ last=k; const x=new Date(i.at); h+=`<h2>${DAYS[x.getDay()]} · ${dfmt(k)}</h2>`; } h+=histRow(i); }
+    foot('');
+  } else {
+    const days=[...new Set(list.map(i=>dayKey(i.at)))].sort();
+    const first=s.start||days[0]||dayKey(Date.now());
+    const lastDay=[s.end,dayKey(Date.now())].filter(Boolean).sort()[0];
+    const span=Math.max(1, Math.round((new Date(lastDay)-new Date(first))/864e5)+1);
+    h+=`<div class="notice">${dfmt(first)} – ${dfmt(lastDay)} хооронд <b>${span}</b> өдөр. Машин бүр хэдэн өдөр үзлэг хийснийг харуулж байна.</div><div class="form" style="gap:0;padding-block:4px">`;
+    if(!sc.length) h+=`<div style="padding:12px 0;color:var(--muted)">Машин алга.</div>`;
+    for(const c of sc){
+      const mine=list.filter(i=>i.carId===c.id); const d=new Set(mine.map(i=>dayKey(i.at))).size; const bad=mine.reduce((n,i)=>n+i.items.filter(x=>x.s==='bad').length,0);
+      const pct=Math.min(100,Math.round(d/span*100));
+      h+=`<div class="item" style="gap:8px"><div class="item-head" style="flex-direction:row;align-items:center"><span class="plate" style="font-size:14px;padding:0 6px">${esc(c.plate)}</span>
+        <span style="font-variant-numeric:tabular-nums;font-weight:600">${d} / ${span} өдөр</span></div>
+        <div style="height:8px;border-radius:4px;background:var(--line);overflow:hidden"><div style="height:100%;width:${pct}%;background:${pct>=100?'var(--ok)':'var(--brand)'}"></div></div>
+        <div class="d" style="font-size:13.5px;color:var(--muted)">${esc(c.driver||'')}${span-d>0?` · ${span-d} өдөр алгассан`:''}${bad?` · <span style="color:var(--bad)">${bad} хэвийн бус тэмдэглэл</span>`:''}</div></div>`;
+    }
+    h+='</div>';
+    foot('');
+  }
+  $('#app').innerHTML=h;
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>toSurvey(s.id,b.dataset.tab));
+  document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>startInspection(b.dataset.start, s.id));
+  bindCommon();
+  const pc=$('#pickCars'); if(pc) pc.onclick=()=>go({name:'surveyForm', id:s.id});
+}
+
+/* ---- create / edit survey ---- */
+let sDraft=null;
+function renderSurveyForm(){
+  const s=surveyOf(view.id)||{}; const editing=!!s.id;
+  if(!sDraft || sDraft.id!==(s.id||'new')) sDraft={id:s.id||'new', name:s.name||'', start:s.start||dayKey(Date.now()), end:s.end||'', carIds:[...(s.carIds||[])]};
+  const d=sDraft;
+  const back=()=>{ sDraft=null; editing?toSurvey(s.id):go({name:'home',tab:'surveys'}); };
+  bar(editing?'Судалгаа засах':'Шинэ судалгаа','',back);
+  $('#app').innerHTML=`<form class="form" novalidate>
+    <div class="field"><label for="sname">Судалгааны нэр *</label><input type="text" id="sname" value="${esc(d.name)}" placeholder="Жишээ нь Хулан хүзүүвчлэх 2026" maxlength="80"><div class="err" id="snErr" hidden>Судалгааны нэрийг оруулна уу.</div></div>
+    <div class="grid2"><div class="field"><label for="sstart">Эхлэх огноо</label><input type="date" id="sstart" value="${esc(d.start)}" style="width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px;min-height:48px"></div>
+    <div class="field"><label for="send">Дуусах огноо</label><input type="date" id="send" value="${esc(d.end)}" style="width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px;min-height:48px"></div></div>
+    <div class="field"><label>Судалгаанд явах машинууд</label><span class="hint">Бүртгэлээс сонгоно. Шинэ машин бол доороос нэмнэ.</span></div>
+    <div style="display:flex;flex-direction:column;gap:8px">${cars.map(c=>`<label class="hist" style="cursor:pointer"><input type="checkbox" data-car="${c.id}" ${d.carIds.includes(c.id)?'checked':''} style="width:22px;height:22px;flex:none">
+      <div class="t"><span class="plate" style="font-size:14px;padding:0 6px">${esc(c.plate)}</span><div class="d">${esc([c.make,c.model].filter(Boolean).join(' '))} · ${esc(c.driver||'')}</div></div></label>`).join('')||'<div class="empty">Бүртгэлтэй машин алга.</div>'}</div>
+    <button type="button" class="btn ghost small" id="newCar">+ Шинэ машин бүртгэх</button>
+    ${editing?`<div id="delZone"><button type="button" class="btn ghost small" id="delS" style="color:var(--bad)">Судалгааг устгах</button></div>`:''}
+  </form>`;
+  $('#sname').oninput=e=>d.name=e.target.value; $('#sstart').onchange=e=>d.start=e.target.value; $('#send').onchange=e=>d.end=e.target.value;
+  document.querySelectorAll('[data-car]').forEach(cb=>cb.onchange=()=>{ const id=cb.dataset.car; d.carIds=cb.checked?[...new Set([...d.carIds,id])]:d.carIds.filter(x=>x!==id); });
+  $('#newCar').onclick=()=>go({name:'carForm', back:{name:'surveyForm', id:view.id}, addToDraft:true});
+  if(editing) $('#delS').onclick=()=>{
+    const n=inspections.filter(i=>i.surveyId===s.id).length;
+    $('#delZone').innerHTML=`<div class="notice" style="border-left-color:var(--bad)">"${esc(s.name)}" судалгааг устгах уу? Түүний ${n} үзлэг мөн устна.
+      <div class="row" style="margin-top:10px"><button type="button" class="btn danger small" id="y">Тийм, устгах</button><button type="button" class="btn ghost small" id="n">Болих</button></div></div>`;
+    $('#y').onclick=()=>{ surveys=surveys.filter(x=>x.id!==s.id); inspections=inspections.filter(i=>i.surveyId!==s.id); save(K.surveys,surveys); save(K.insp,inspections); sDraft=null; toast('Судалгаа устгагдлаа'); go({name:'home',tab:'surveys'}); };
+    $('#n').onclick=()=>render(); };
+  foot(`<button class="btn wide" id="saveS">${editing?'Хадгалах':'Судалгаа үүсгэх'}</button>`);
+  $('#saveS').onclick=()=>{
+    const name=d.name.trim(); if(!name){ $('#snErr').hidden=false; $('#sname').focus(); return; }
+    if(d.start&&d.end&&d.end<d.start){ toast('Дуусах огноо эхлэх огнооноос өмнө байна.'); return; }
+    const rec={id:editing?s.id:uid(), name, start:d.start, end:d.end, carIds:d.carIds};
+    surveys = editing ? surveys.map(x=>x.id===s.id?rec:x) : [...surveys, rec];
+    if(save(K.surveys,surveys)){ sDraft=null; toast(editing?'Хадгалагдлаа':'Судалгаа үүслээ'); toSurvey(rec.id); }
+  };
+}
+
+/* ---- add / edit car ---- */
+function renderCarForm(){
+  const c = cars.find(x=>x.id===view.id) || {};
+  const editing=!!c.id;
+  const backTo=view.back||{name:'home',tab:'cars'}; const addToDraft=view.addToDraft;
+  const back=()=>go(backTo);
+  bar(editing?'Машин засах':'Машин нэмэх','',back);
+  const knownMakes=[...new Set(cars.map(x=>x.make).filter(Boolean).concat(['Toyota','Lexus','Hyundai','Nissan','Mitsubishi','Ford','Jeep','Isuzu']))];
+  const knownDrivers=[...new Set(cars.map(x=>x.driver).filter(Boolean))];
+  $('#app').innerHTML=`<form class="form" id="f" novalidate>
+    <div class="field"><label for="plate">Улсын дугаар *</label><input type="text" id="plate" value="${esc(c.plate)}" placeholder="1234 УБА" autocomplete="off" style="font-family:var(--font-display);letter-spacing:.06em;text-transform:uppercase"><div class="err" id="plateErr" hidden></div></div>
+    <div class="grid2">
+      <div class="field"><label for="make">Марк</label><input type="text" id="make" list="makes" value="${esc(c.make)}" placeholder="Toyota"></div>
+      <div class="field"><label for="model">Загвар</label><input type="text" id="model" value="${esc(c.model)}" placeholder="Land Cruiser"></div>
+      <div class="field"><label for="year">Үйлдвэрлэсэн он</label><input type="number" id="year" inputmode="numeric" min="1970" max="2030" value="${esc(c.year)}" placeholder="2018"></div>
+      <div class="field"><label for="color">Өнгө</label><input type="text" id="color" value="${esc(c.color)}" placeholder="Цагаан"></div>
+    </div>
+    <div class="field"><label for="driver">Жолооч *</label><input type="text" id="driver" list="drivers" value="${esc(c.driver)}" placeholder="Овог нэр"><div class="err" id="drvErr" hidden></div></div>
+    <datalist id="makes">${knownMakes.map(m=>`<option value="${esc(m)}">`).join('')}</datalist>
+    <datalist id="drivers">${knownDrivers.map(m=>`<option value="${esc(m)}">`).join('')}</datalist>
+    ${editing?`<div id="delZone"><button type="button" class="btn ghost small" id="del" style="color:var(--bad)">Машиныг устгах</button></div>`:''}
+  </form>`;
+  foot(`<button class="btn wide" id="saveCar">${editing?'Хадгалах':'Машин нэмэх'}</button>`);
+  if(editing) $('#del').onclick=()=>{
+    $('#delZone').innerHTML=`<div class="notice" style="border-left-color:var(--bad)">${esc(c.plate)} машиныг бүртгэлээс устгах уу? Бүх судалгаанаас хасагдана, үзлэгийн түүх хадгалагдана.
+      <div class="row" style="margin-top:10px"><button type="button" class="btn danger small" id="delYes">Тийм, устгах</button><button type="button" class="btn ghost small" id="delNo">Болих</button></div></div>`;
+    $('#delYes').onclick=()=>{ cars=cars.filter(x=>x.id!==c.id); surveys=surveys.map(s=>({...s, carIds:s.carIds.filter(id=>id!==c.id)})); save(K.cars,cars); save(K.surveys,surveys); toast('Машин устгагдлаа'); back(); };
+    $('#delNo').onclick=()=>render();
+  };
+  $('#saveCar').onclick=()=>{
+    const plate=$('#plate').value.trim().toUpperCase().replace(/\s+/g,' ');
+    const driver=$('#driver').value.trim();
+    $('#plateErr').hidden=$('#drvErr').hidden=true;
+    let ok=true;
+    if(!plate){ $('#plateErr').textContent='Улсын дугаараа оруулна уу.'; $('#plateErr').hidden=false; ok=false; }
+    else if(cars.some(x=>x.plate===plate && x.id!==c.id)){ $('#plateErr').textContent='Энэ дугаартай машин бүртгэлтэй байна.'; $('#plateErr').hidden=false; ok=false; }
+    if(!driver){ $('#drvErr').textContent='Жолоочийн нэрийг оруулна уу.'; $('#drvErr').hidden=false; ok=false; }
+    if(!ok) return;
+    const rec={id:c.id||uid(), plate, make:$('#make').value.trim(), model:$('#model').value.trim(), year:$('#year').value.trim(), color:$('#color').value.trim(), driver};
+    cars = editing ? cars.map(x=>x.id===c.id?rec:x) : [...cars, rec];
+    if(!editing && addToDraft && sDraft) sDraft.carIds.push(rec.id);
+    if(save(K.cars,cars)){ toast(editing?'Хадгалагдлаа':'Машин нэмэгдлээ'); back(); }
+  };
+}
+
+/* ---- inspection (3 steps) ---- */
+let draft=null;
+function startInspection(carId, sid){
+  const c=cars.find(x=>x.id===carId);
+  draft={carId, surveyId:sid, plate:c.plate, car:[c.make,c.model,c.year,c.color].filter(Boolean).join(' · '), driver:c.driver, odo:'', fuel:'',
+    items:ITEMS.map(i=>({id:i.id, s:null, note:'', photo:''})), selfie:'', step:1, tried:false};
+  go({name:'inspect'});
+}
+function stepsBar(n){ return `<div class="steps" aria-label="Алхам ${n}/3">${[1,2,3].map(i=>`<span class="${i<=n?'on':''}"></span>`).join('')}</div>`; }
+function renderInspect(){
+  const d=draft; if(!d) return go({name:'home',tab:'surveys'});
+  const back = d.step===1 ? ()=>{ const sid=d.surveyId; draft=null; toSurvey(sid); } : ()=>{ d.step--; d.tried=false; render(); window.scrollTo(0,0); };
+  bar(d.plate+' · '+(surveyOf(d.surveyId)||{name:''}).name, ['Үндсэн мэдээлэл','Доорх асуумжийг бүрэн бөглөнө үү','Селфи зураг'][d.step-1], back);
+  if(d.step===1){
+    $('#app').innerHTML = stepsBar(1)+`<form class="form" novalidate>
+      <div class="notice">${esc(d.car)||'Машин'} · ${fmt(Date.now())}<br><span style="color:var(--muted)">Огноо, цаг автоматаар бичигдэнэ.</span></div>
+      <div class="field"><label for="drv">Жолооч *</label><input type="text" id="drv" value="${esc(d.driver)}"></div>
+      <div class="field"><label for="odo">Гүйлтийн заалт (км) <span class="tag">Санал</span></label><input type="number" id="odo" inputmode="numeric" value="${esc(d.odo)}" placeholder="Жишээ нь 154200"></div>
+      <div class="field"><label>Түлшний түвшин <span class="tag">Санал</span></label><div class="fuel">${FUEL.map(f=>`<button type="button" aria-pressed="${d.fuel===f}" data-fuel="${f}">${f}</button>`).join('')}</div></div>
+      <div class="err" id="e1" hidden>Жолоочийн нэрийг оруулна уу.</div></form>`;
+    document.querySelectorAll('[data-fuel]').forEach(b=>b.onclick=()=>{ d.fuel=b.dataset.fuel; document.querySelectorAll('[data-fuel]').forEach(x=>x.setAttribute('aria-pressed', x===b)); });
+    $('#drv').oninput=e=>d.driver=e.target.value; $('#odo').oninput=e=>d.odo=e.target.value;
+    foot(`<button class="btn wide" id="next">Үргэлжлүүлэх</button>`);
+    $('#next').onclick=()=>{ if(!d.driver.trim()){ $('#e1').hidden=false; return;} d.step=2; render(); window.scrollTo(0,0); };
+  }
+  if(d.step===2){
+    let h=stepsBar(2)+`<div class="row" style="justify-content:space-between;align-items:center"><span style="color:var(--muted);font-size:14px">Хэвийн бус бол тайлбар заавал бичнэ.</span>
+      <button class="btn ghost small" id="allOk">Үлдсэнийг хэвийн</button></div><div class="form" style="padding-block:4px">`;
+    ITEMS.forEach((it,idx)=>{ const r=d.items[idx]; const miss = d.tried && (r.s===null || (r.s==='bad' && !r.note.trim()));
+      h+=`<div class="item ${r.s==='bad'?'isbad':''}" id="it-${it.id}"><div class="item-head"><div class="item-title"><span class="n">${idx+1}.</span>${esc(it.t)}${it.suggest?'<span class="tag">Санал</span>':''}</div>
+        <div class="seg" role="group" aria-label="${esc(it.t)}"><button class="ok" aria-pressed="${r.s==='ok'}" data-i="${idx}" data-s="ok">Хэвийн</button><button class="bad" aria-pressed="${r.s==='bad'}" data-i="${idx}" data-s="bad">Хэвийн бус</button></div></div>
+        ${r.s==='bad'?`<textarea id="note-${idx}" data-note="${idx}" placeholder="Хэвийн бус тайлбар: юу гэмтсэн, засах боломжтой эсэх">${esc(r.note)}</textarea>
+          <div class="row" style="align-items:center"><label class="photo-btn">📷 Гэмтлийн зураг<input type="file" accept="image/*" capture="environment" data-photo="${idx}"></label>${r.photo?`<img class="thumb" src="${r.photo}" alt="Гэмтлийн зураг">`:''}</div>`:''}
+        ${miss?`<div class="err">${r.s===null?'Хэвийн эсэхийг сонгоно уу.':'Хэвийн бус шалтгааныг бичнэ үү.'}</div>`:''}</div>`; });
+    h+='</div>';
+    $('#app').innerHTML=h;
+    const answered=()=>d.items.filter(r=>r.s && (r.s==='ok'||r.note.trim())).length;
+    foot(`<span class="count" id="cnt">${answered()} / ${ITEMS.length} бөглөсөн</span><button class="btn" id="next">Үргэлжлүүлэх</button>`);
+    document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{ const r=d.items[+b.dataset.i]; r.s=b.dataset.s; const y=window.scrollY; render(); window.scrollTo(0,y); if(r.s==='bad'){ const t=$('#note-'+b.dataset.i); t&&t.focus({preventScroll:true}); } });
+    document.querySelectorAll('[data-note]').forEach(t=>t.oninput=()=>{ d.items[+t.dataset.note].note=t.value; $('#cnt').textContent=`${answered()} / ${ITEMS.length} бөглөсөн`; });
+    document.querySelectorAll('[data-photo]').forEach(inp=>inp.onchange=async()=>{ const f=inp.files[0]; if(!f) return; try{ d.items[+inp.dataset.photo].photo=await compress(f,640,.65); const y=window.scrollY; render(); window.scrollTo(0,y);}catch(e){ toast('Зургийг уншиж чадсангүй. Дахин оролдоно уу.'); } });
+    $('#allOk').onclick=()=>{ d.items.forEach(r=>{ if(r.s===null) r.s='ok'; }); const y=window.scrollY; render(); window.scrollTo(0,y); };
+    $('#next').onclick=()=>{ const firstBad=d.items.findIndex(r=>r.s===null || (r.s==='bad'&&!r.note.trim()));
+      if(firstBad>=0){ d.tried=true; render(); document.getElementById('it-'+ITEMS[firstBad].id).scrollIntoView({block:'center'}); toast('Бүх асуултыг бөглөнө үү.'); return; }
+      d.step=3; d.tried=false; render(); window.scrollTo(0,0); };
+  }
+  if(d.step===3){
+    const bad=d.items.filter(r=>r.s==='bad').length;
+    $('#app').innerHTML = stepsBar(3)+`<div class="selfie-box">
+      ${d.selfie?`<img src="${d.selfie}" alt="Жолоочийн селфи">`:ICON_SVG.replace('<svg ','<svg aria-hidden="true" ')}
+      <div style="font-family:var(--font-display);font-weight:700;font-size:17px">Машинаа оруулан селфи авна уу</div>
+      <div style="color:var(--muted);font-size:14px">Үзлэг хийснийг баталгаажуулахын тулд машинтайгаа хамт зураг авна. Заавал шаардлагатай.</div>
+      <label class="btn ${d.selfie?'ghost':''}" style="display:inline-flex;align-items:center;gap:8px">📷 ${d.selfie?'Дахин авах':'Селфи авах'}<input type="file" id="selfie" accept="image/*" capture="user" hidden></label>
+    </div>
+    <div class="notice">${bad?`<b style="color:var(--bad)">${bad} зүйл хэвийн бус</b> гэж тэмдэглэгдсэн.`:'Бүх зүйл хэвийн.'} Илгээсний дараа засах боломжгүй.</div>`;
+    $('#selfie').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ d.selfie=await compress(f,720,.7); render(); }catch(err){ toast('Зургийг уншиж чадсангүй. Дахин оролдоно уу.'); } };
+    foot(`<button class="btn wide" id="submit" ${d.selfie?'':'disabled'}>Үзлэг илгээх</button>`);
+    $('#submit').onclick=()=>{ if(!d.selfie) return;
+      const rec={id:uid(), at:Date.now(), surveyId:d.surveyId, carId:d.carId, plate:d.plate, car:d.car, driver:d.driver.trim(), odo:d.odo, fuel:d.fuel, items:d.items, selfie:d.selfie};
+      inspections=[...inspections, rec];
+      if(!save(K.insp,inspections)){ inspections=inspections.slice(0,-1); return; }
+      draft=null; toast('Үзлэг хадгалагдлаа'); go({name:'detail', id:rec.id, fresh:true}); syncAll(); };
+  }
+}
+
+/* ---- inspection detail ---- */
+function report(i){
+  const bad=i.items.filter(x=>x.s==='bad');
+  const L=['BRCC · Биологийн Нөөцийг Хамгаалах Төв', `${(surveyOf(i.surveyId)||{name:'Машины үзлэг'}).name}`, `Машин: ${i.plate}${i.car?' ('+i.car+')':''}`, `Жолооч: ${i.driver}`, `Огноо: ${fmt(i.at)}`];
+  if(i.odo) L.push(`Гүйлт: ${i.odo} км`); if(i.fuel) L.push(`Түлш: ${i.fuel}`);
+  L.push(bad.length?`Хэвийн бус (${bad.length}):`:'Бүх зүйл хэвийн.');
+  bad.forEach(x=>{ const it=ITEMS.find(t=>t.id===x.id); L.push(`- ${it?it.t:x.id}: ${x.note}`); });
+  return L.join('\n');
+}
+function renderDetail(){
+  const i=inspections.find(x=>x.id===view.id); if(!i) return go({name:'home',tab:'surveys'});
+  bar(i.plate, fmt(i.at)+' · '+esc((surveyOf(i.surveyId)||{name:''}).name), ()=>toSurvey(i.surveyId, view.fresh?'cars':'hist'));
+  const bad=i.items.filter(x=>x.s==='bad');
+  let h=`<div class="selfie-box" style="border-style:solid;border-color:var(--line)"><img src="${i.selfie}" alt="Жолоочийн селфи"></div>
+    <div class="form"><dl class="kv">
+      <dt>Машин</dt><dd>${esc(i.plate)}${i.car?' · '+esc(i.car):''}</dd>
+      <dt>Жолооч</dt><dd>${esc(i.driver)}</dd>
+      <dt>Огноо</dt><dd>${fmt(i.at)}</dd>
+      ${i.odo?`<dt>Гүйлт</dt><dd>${esc(i.odo)} км</dd>`:''}${i.fuel?`<dt>Түлш</dt><dd>${esc(i.fuel)}</dd>`:''}
+      <dt>Sheet</dt><dd>${i.synced?'<span class="pill ok">Илгээгдсэн</span>':`<span class="pill todo">${syncing?'Илгээж байна…':'Илгээгдээгүй'}</span>`}</dd>
+      <dt>Дүн</dt><dd>${bad.length?`<span class="pill bad">${bad.length} хэвийн бус</span>`:`<span class="pill ok">Бүх ${i.items.length} зүйл хэвийн</span>`}</dd></dl></div>`;
+  if(bad.length){ h+=`<h2>Хэвийн бус зүйлс</h2><div class="badlist">`+bad.map(x=>{ const it=ITEMS.find(t=>t.id===x.id);
+    return `<div class="b"><strong>${esc(it?it.t:x.id)}</strong><div>${esc(x.note)}</div>${x.photo?`<img class="thumb" style="margin-top:8px;width:120px;height:120px" src="${x.photo}" alt="Гэмтлийн зураг">`:''}</div>`; }).join('')+`</div>`; }
+  h+=`<div id="delZone"><button class="btn ghost small" id="delI" style="color:var(--bad)">Энэ үзлэгийг устгах</button></div>`;
+  $('#app').innerHTML=h;
+  foot(`<button class="btn ghost" id="copy" style="flex:1">Тайлан хуулах</button><button class="btn" id="home" style="flex:1">Судалгаа руу</button>`);
+  $('#home').onclick=()=>toSurvey(i.surveyId);
+  $('#copy').onclick=()=>{ const txt=report(i); navigator.clipboard.writeText(txt).then(()=>toast('Тайлан хуулагдлаа. Чат руу буулгана уу.'),()=>{ const ta=document.createElement('textarea'); ta.value=txt; ta.style.minHeight='180px'; $('#app').appendChild(ta); ta.select(); toast('Текстийг сонгоод хуулна уу.'); }); };
+  $('#delI').onclick=()=>{ $('#delZone').innerHTML=`<div class="notice" style="border-left-color:var(--bad)">Энэ үзлэгийг устгах уу?<div class="row" style="margin-top:10px"><button class="btn danger small" id="y">Тийм, устгах</button><button class="btn ghost small" id="n">Болих</button></div></div>`;
+    $('#y').onclick=()=>{ inspections=inspections.filter(x=>x.id!==i.id); save(K.insp,inspections); toast('Устгагдлаа'); toSurvey(i.surveyId,'hist'); };
+    $('#n').onclick=()=>render(); };
+}
+
+/* ---- Google Sheet sync (Apps Script web app, same pattern as the Saiga app) ---- */
+// Байгууллагын Apps Script /exec холбоосыг энд тавьвал бүх утсанд автоматаар тохирно.
+const DEFAULT_SHEET_URL = '';
+const K_URL='vi.sheetUrl';
+const sheetUrl = () => (load(K_URL,'')||DEFAULT_SHEET_URL).trim();
+let syncing=false, syncMsg='', lastSync=load('vi.lastSync',0);
+const pending = () => inspections.filter(i=>!i.synced).length;
+async function post(url, payload, ms=90000){
+  const ac=new AbortController(); const timer=setTimeout(()=>ac.abort(), ms); let j;
+  try{ const res=await fetch(url,{method:'POST', body:JSON.stringify(payload), headers:{'Content-Type':'text/plain;charset=utf-8'}, redirect:'follow', signal:ac.signal}); j=await res.json(); }
+  catch(e){ throw ac.signal.aborted ? new Error('Хариу ирсэнгүй (хугацаа хэтэрлээ)') : new Error('Холбогдож чадсангүй'); }
+  finally{ clearTimeout(timer); }
+  if(!j.ok) throw new Error(j.error||'Sheet алдаа'); return j;
+}
+function thumb(src, max=240){ return new Promise(res=>{ const img=new Image(); img.onload=()=>{ const s=Math.min(1,max/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.round(img.width*s); c.height=Math.round(img.height*s); c.getContext('2d').drawImage(img,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',.7)); }; img.onerror=()=>res(src); img.src=src; }); }
+const sheetName = n => String(n||'Бусад').replace(/[\[\]\*\?\/\\:]/g,' ').trim().slice(0,99)||'Бусад';
+function headers(){ return ['id','Огноо','Цаг','Судалгаа','Улсын дугаар','Машин','Жолооч','Гүйлт (км)','Түлш','Дүн', ...ITEMS.map(t=>t.t), 'Хэвийн бус тайлбар','Селфи','Гэмтлийн зураг']; }
+function sheetRow(i, s){
+  const bad=i.items.filter(x=>x.s==='bad'); const d=new Date(i.at);
+  const r={'id':i.id, 'Огноо':dayKey(i.at), 'Цаг':String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'), 'Судалгаа':s.name, 'Улсын дугаар':i.plate, 'Машин':i.car||'', 'Жолооч':i.driver,
+    'Гүйлт (км)':i.odo||'', 'Түлш':i.fuel||'', 'Дүн':bad.length?bad.length+' хэвийн бус':'Хэвийн',
+    'Хэвийн бус тайлбар':bad.map(x=>{ const it=ITEMS.find(t=>t.id===x.id); return (it?it.t:x.id)+': '+x.note; }).join('\n'),
+    'Селфи':i.selfieLink||'', 'Гэмтлийн зураг':i.items.filter(x=>x.photoLink).map(x=>x.photoLink).join('\n')};
+  ITEMS.forEach(t=>{ const x=i.items.find(y=>y.id===t.id); r[t.t]= !x||!x.s ? '' : x.s==='ok' ? 'Хэвийн' : 'Хэвийн бус: '+x.note; });
+  return r;
+}
+function mailBody(i){
+  const L=[report(i), ''];
+  if(i.selfieLink) L.push('Селфи: '+i.selfieLink);
+  i.items.filter(x=>x.photoLink).forEach(x=>{ const it=ITEMS.find(t=>t.id===x.id); L.push((it?it.t:x.id)+' зураг: '+x.photoLink); });
+  return L.join('\n');
+}
+async function syncAll(manual){
+  const url=sheetUrl();
+  if(!url){ if(manual) toast('Эхлээд Google Sheet холбоосоо оруулна уу.'); return; }
+  if(syncing) return;
+  if(!navigator.onLine){ if(manual) toast('Интернэт алга. Сүлжээнд орохоор автоматаар илгээнэ.'); return; }
+  const todo=inspections.filter(i=>!i.synced); if(!todo.length){ if(manual) toast('Илгээх үзлэг алга.'); return; }
+  syncing=true; syncMsg='Илгээж байна…'; refreshSync(); let n=0;
+  try{
+    for(const i of todo){
+      if(!inspections.includes(i)) continue; // илгээх хооронд устгагдсан
+      const s=surveyOf(i.surveyId)||{name:'Бусад'};
+      const base=`${dayKey(i.at)}_${i.plate.replace(/\s+/g,'')}_${i.id.slice(-5)}`;
+      if(i.selfie && !i.selfieLink){ const j=await post(url,{action:'photo', folder:s.name, name:base+'_selfie.jpg', mime:'image/jpeg', caption:`${i.plate} · ${i.driver} · ${fmt(i.at)}`, data:i.selfie.split(',')[1]}); i.selfieLink=j.url; save(K.insp,inspections); }
+      for(const x of i.items){ if(x.photo && !x.photoLink){ const it=ITEMS.find(t=>t.id===x.id); const j=await post(url,{action:'photo', folder:s.name, name:base+'_'+x.id+'.jpg', mime:'image/jpeg', caption:(it?it.t:x.id)+': '+x.note, data:x.photo.split(',')[1]}); x.photoLink=j.url; save(K.insp,inspections); } }
+      await post(url,{action:'upsert', sheet:sheetName(s.name), headers:headers(), key:'id', rows:[sheetRow(i,s)]});
+      if(!i.mailed){ const bad=i.items.filter(x=>x.s==='bad').length;
+        await post(url,{action:'notify', bad, subject:`Машины үзлэг: ${i.plate} · ${dayKey(i.at).replace(/-/g,'.')}${bad?' · '+bad+' хэвийн бус':' · хэвийн'}`, body:mailBody(i)}); i.mailed=true; }
+      i.synced=true;
+      // Бүтэн зураг Drive-д хадгалагдсан тул утсанд жижиг хувийг үлдээнэ (санах ой дүүрэхээс сэргийлнэ)
+      if(i.selfie) i.selfie=await thumb(i.selfie, 320);
+      for(const x of i.items) if(x.photo) x.photo=await thumb(x.photo, 240);
+      save(K.insp,inspections); n++;
+    }
+    lastSync=Date.now(); save('vi.lastSync',lastSync); syncMsg=n?`${n} үзлэг Sheet-д илгээгдлээ.`:'';
+    if(manual&&n) toast(syncMsg);
+  }catch(e){ syncMsg='Илгээж чадсангүй: '+e.message+'. Дараа дахин оролдоно.'; if(manual) toast(syncMsg); }
+  finally{ syncing=false; save(K.insp,inspections); refreshSync(); }
+}
+function refreshSync(){ if((view.name==='home' && view.tab==='settings') || view.name==='detail'){ const y=window.scrollY; render(); window.scrollTo(0,y); } else if(view.name==='home'){ render(); } }
+function syncBanner(){
+  const p=pending(); if(!sheetUrl()) return `<button class="notice" data-tab="settings" style="text-align:left;border-left-color:var(--warn)">Google Sheet холбогдоогүй. Үзлэгүүд зөвхөн энэ утсанд хадгалагдаж байна. <u>Тохируулах</u></button>`;
+  if(syncing) return `<div class="notice">☁ Sheet рүү илгээж байна…</div>`;
+  if(p) return `<button class="notice" data-tab="settings" style="text-align:left;border-left-color:var(--warn)">☁ ${p} үзлэг Sheet рүү илгээгдээгүй. ${navigator.onLine?'':'Интернэт ороход автоматаар илгээнэ. '}<u>Дэлгэрэнгүй</u></button>`;
+  return '';
+}
+function renderSettings(){
+  const p=pending(); const url=sheetUrl();
+  return `<div class="form">
+    <h2 style="margin:0">Google Sheet ба имэйл</h2>
+    <div class="notice" style="border-left-color:${url?(p?'var(--warn)':'var(--ok)'):'var(--warn)'}">${url?(p?`${p} үзлэг илгээгдээгүй байна.`:'Бүх үзлэг Sheet-д илгээгдсэн.'):'Холбоос оруулаагүй байна.'}
+      ${lastSync?`<br><span style="color:var(--muted)">Сүүлд илгээсэн: ${fmt(lastSync)}</span>`:''}${syncMsg?`<br>${esc(syncMsg)}`:''}</div>
+    <div class="field"><label for="surl">Apps Script холбоос (/exec)</label>
+      <input type="url" id="surl" value="${esc(load(K_URL,'')||'')}" placeholder="${DEFAULT_SHEET_URL?'Байгууллагын холбоос ашиглаж байна':'https://script.google.com/macros/s/…/exec'}" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <span class="hint">Үзлэг бүр Sheet-ийн судалгааны нэртэй хуудсанд мөр болж орно. Селфи, гэмтлийн зураг Drive-ийн “Машины үзлэг зураг” хавтсанд хадгалагдана. Хэвийн бус зүйлтэй үзлэгийг data.brcc@gmail.com руу имэйлээр мэдэгдэнэ.</span></div>
+    <div class="row"><button class="btn ghost small" id="stest">Шалгах</button><button class="btn small" id="ssave">Хадгалах</button><button class="btn ghost small" id="snow" ${url&&p&&!syncing?'':'disabled'}>Одоо илгээх</button></div>
+    <div class="err" id="smsg" hidden></div>
+  </div>
+  <div class="form">
+    <h2 style="margin:0">Утсандаа суулгах</h2>
+    <div style="font-size:14.5px;line-height:1.5"><b>iPhone:</b> Safari-гаар нээгээд доорх <b>Share ⬆</b> → <b>Add to Home Screen</b>.<br>
+    <b>Android:</b> Chrome-оор нээгээд <b>⋮</b> → <b>Install app</b> (эсвэл Add to Home screen).<br>
+    <span style="color:var(--muted)">Суулгасны дараа зөвхөн нүүр дэлгэцийн айконоос нээнэ үү. iPhone дээр Safari доторх өгөгдөл ба суулгасан апп тусдаа хадгалагддаг.</span></div>
+  </div>`;
+}
+function bindSettings(){
+  const msg=(t,ok)=>{ const m=$('#smsg'); m.hidden=false; m.textContent=t; m.style.color=ok?'var(--ok)':''; };
+  const val=()=>$('#surl').value.trim();
+  const valid=u=>!u || /^https:\/\/script\.google(usercontent)?\.com\/.+/.test(u);
+  $('#ssave').onclick=()=>{ const u=val(); if(!valid(u)) return msg('Холбоос https://script.google.com/… гэж эхлэх ёстой.'); save(K_URL,u); toast(u?'Хадгалагдлаа':'Холбоосыг устгалаа'); syncAll(); render(); };
+  $('#stest').onclick=async()=>{ const u=val()||DEFAULT_SHEET_URL; if(!u||!valid(u)) return msg('Зөв холбоос оруулна уу.'); msg('Шалгаж байна…',true);
+    try{ const j=await post(u,{action:'ping'},30000); msg(`Холбогдлоо: “${j.sheet}” Sheet.`,true); }catch(e){ msg('Холбогдсонгүй: '+e.message); } };
+  $('#snow').onclick=()=>syncAll(true);
+}
+window.addEventListener('online', ()=>syncAll());
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') syncAll(); });
+setInterval(()=>syncAll(), 120000);
+setTimeout(()=>syncAll(), 1500);
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+render();
+</script>
+</body>
+</html>
