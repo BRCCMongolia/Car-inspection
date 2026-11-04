@@ -179,6 +179,17 @@ if (!load('vi.clean1',false)){ // remove the example car and the auto-created sa
   save(K.cars,cars); save(K.surveys,surveys); save(K.insp,inspections); save('vi.clean1',true);
 }
 
+/* ---- BRCC fleet: pre-registered on every phone (added once by plate; later edits on the phone are kept) ---- */
+const FLEET = [
+  {id:'f9499', plate:'9499 УАА', make:'Jeep', model:'Wrangler', year:'2017', color:'Цэнхэр', driver:'Ойнбаяр'},
+  {id:'f4849', plate:'4849 УЕВ', make:'Toyota', model:'Land Cruiser 200', year:'2017', color:'Хар', driver:'Дархантөгс'},
+  {id:'f2845', plate:'2845 УНК', make:'Toyota', model:'Land Cruiser 70', year:'2006', color:'Цагаан', driver:'Ганболд'},
+  {id:'f0061', plate:'0061 ӨМЕ', make:'Nissan', model:'Patrol Y61', year:'2023', color:'Цагаан', driver:'Батсүх'},
+];
+(function(){ const done=load('vi.fleet',[]); const norm=p=>String(p||'').replace(/\s+/g,'').toUpperCase(); let ch=false;
+  for(const f of FLEET){ if(done.includes(f.id)) continue; if(!cars.some(c=>norm(c.plate)===norm(f.plate))){ cars.push({...f}); } done.push(f.id); ch=true; }
+  if(ch){ save(K.cars,cars); save('vi.fleet',done); } })();
+
 /* ---- helpers ---- */
 const $ = s => document.querySelector(s);
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
