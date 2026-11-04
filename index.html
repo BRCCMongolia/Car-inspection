@@ -170,15 +170,13 @@ function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return tru
 let cars = load(K.cars, []);
 let inspections = load(K.insp, []);
 let surveys = load(K.surveys, null);
-if (!load(K.seeded,false) && cars.length===0){
-  cars=[{id:'ex1', plate:'0000 УБА', make:'Toyota', model:'Land Cruiser 200', year:'2016', color:'Цагаан', driver:'Жишээ жолооч', example:true}];
-  save(K.cars,cars); save(K.seeded,true);
-}
-if (!surveys){ // first run of the survey version: put existing cars and inspections under one survey
-  const y=new Date().getFullYear();
-  surveys=[{id:'s1', name:'Хулан хүзүүвчлэх '+y, start:'', end:'', carIds:cars.map(c=>c.id)}];
-  inspections=inspections.map(i=>i.surveyId?i:{...i, surveyId:'s1'});
-  save(K.surveys,surveys); save(K.insp,inspections);
+if (!surveys){ surveys=[]; save(K.surveys,surveys); }
+if (!load('vi.clean1',false)){ // remove the example car and the auto-created sample survey (users start their own)
+  const s1=surveys.find(s=>s.id==='s1' && /^Хулан хүзүүвчлэх \d{4}$/.test(s.name));
+  if(s1){ surveys=surveys.filter(s=>s!==s1); inspections=inspections.filter(i=>i.surveyId!=='s1'); }
+  cars=cars.filter(c=>c.id!=='ex1'); surveys.forEach(s=>s.carIds=s.carIds.filter(id=>id!=='ex1'));
+  inspections=inspections.filter(i=>i.carId!=='ex1');
+  save(K.cars,cars); save(K.surveys,surveys); save(K.insp,inspections); save('vi.clean1',true);
 }
 
 /* ---- helpers ---- */
