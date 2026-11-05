@@ -1,5 +1,5 @@
 // Офлайн ажиллагаа: аппын файлуудыг утсанд хадгална. Апп шинэчлэхдээ VERSION-ийг өөрчилнө.
-const VERSION = 'v1.1.5';
+const VERSION = 'v1.1.6';
 const SHELL = 'shell-' + VERSION;
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'img/icon-192.png', 'img/icon-512.png', 'img/apple-touch-icon.png', 'img/brcc.png', 'js/jszip.min.js'];
 

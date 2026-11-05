@@ -200,6 +200,10 @@ const FLEET = [
 (function(){ const done=load('vi.fleet',[]); const norm=p=>String(p||'').replace(/\s+/g,'').toUpperCase(); let ch=false;
   for(const f of FLEET){ if(done.includes(f.id)) continue; if(!cars.some(c=>norm(c.plate)===norm(f.plate))){ const {was,...car}=f; cars.push(car); } done.push(f.id); ch=true; }
   for(const f of FLEET){ const c=cars.find(x=>x.id===f.id); if(c && f.was && c.driver===f.was){ c.driver=f.driver; ch=true; } } // name format update (Овгийн үсэг.Нэр)
+  if(!load('vi.restore1',false)){ // 2026-11-05: судалгаанаас хасах гэж бүртгэлээс устгагдсан машиныг сэргээнэ
+    for(const f of FLEET){ if(!cars.some(c=>c.id===f.id||norm(c.plate)===norm(f.plate))){ const {was,...car}=f; cars.push(car); ch=true;
+      surveys.forEach(s=>{ if(!s.carIds.includes(f.id) && inspections.some(i=>i.surveyId===s.id&&i.carId===f.id)) s.carIds.push(f.id); }); } }
+    save('vi.restore1',true); save(K.surveys,surveys); }
   if(ch){ save(K.cars,cars); save('vi.fleet',done); } })();
 
 /* ---- helpers ---- */
@@ -349,7 +353,7 @@ function renderSurvey(){
       <button class="btn" id="zipMail" ${n?'':'disabled'}>✉️ ZIP-ийг имэйлээр илгээх</button>
       <button class="btn ghost" id="zipShare" ${n?'':'disabled'}>⬇️ ZIP утсанд хадгалах / хуваалцах</button>
       <div class="err" id="zipMsg" hidden></div></div>`;
-    h+=`<div id="finZone"></div>`;
+    h+=`<div id="finZone"></div><div id="delSZone" style="margin-top:28px;text-align:center"><button class="btn ghost small" id="delSurvey" style="color:var(--bad)">🗑 Судалгааг устгах</button></div>`;
     foot(st==='done'?`<button class="btn wide ghost" id="reopen" style="background:var(--surface)">Судалгааг дахин нээх</button>`:`<button class="btn wide" id="finish" style="background:var(--leaf)">✓ Судалгаа дууссан</button>`);
   }
   $('#app').innerHTML=h;
@@ -359,6 +363,7 @@ function renderSurvey(){
     const m=$('#zipMsg'); if(m){ m.hidden=false; m.textContent='Sheet рүү илгээж байна…'; m.style.color='var(--ok)'; }
     try{ await syncAll(false); await exportZip(s,'mail'); } finally{ const b=$('#sendAll'); if(b) b.disabled=false; } };
   const zs=$('#zipShare'); if(zs) zs.onclick=()=>exportZip(s,'share');
+  const ds=$('#delSurvey'); if(ds) ds.onclick=()=>deleteSurvey(s, $('#delSZone'));
   const fin=$('#finish'); if(fin) fin.onclick=()=>{ const t=dayKey(Date.now());
     $('#finZone').innerHTML=`<div class="notice" style="border-left-color:var(--leaf)">“${esc(s.name)}” судалгааг дуусгах уу? Дуусах огноо <b>${dfmt(t)}</b> гэж бичигдэнэ. Дараа нь шинэ үзлэг хийхгүй (хэрэгтэй бол дахин нээж болно).
       <div class="row" style="margin-top:10px"><button class="btn small" id="finY" style="background:var(--leaf)">Тийм, дуусгах</button><button class="btn ghost small" id="finN">Болих</button></div></div>`;
@@ -393,10 +398,7 @@ function renderSurveyForm(){
   $('#newCar').onclick=()=>go({name:'carForm', back:{name:'surveyForm', id:view.id}, addToDraft:true});
   if(editing) $('#delS').onclick=()=>{
     const n=inspections.filter(i=>i.surveyId===s.id).length;
-    $('#delZone').innerHTML=`<div class="notice" style="border-left-color:var(--bad)">"${esc(s.name)}" судалгааг устгах уу? Түүний ${n} үзлэг мөн устна.
-      <div class="row" style="margin-top:10px"><button type="button" class="btn danger small" id="y">Тийм, устгах</button><button type="button" class="btn ghost small" id="n">Болих</button></div></div>`;
-    $('#y').onclick=()=>{ surveys=surveys.filter(x=>x.id!==s.id); inspections=inspections.filter(i=>i.surveyId!==s.id); save(K.surveys,surveys); save(K.insp,inspections); sDraft=null; toast('Судалгаа устгагдлаа'); go({name:'home',tab:'surveys'}); };
-    $('#n').onclick=()=>render(); };
+    deleteSurvey(s, $('#delZone')); };
   foot(`<button class="btn wide" id="saveS">${editing?'Хадгалах':'Судалгаа үүсгэх'}</button>`);
   $('#saveS').onclick=()=>{
     const name=d.name.trim(); if(!name){ $('#snErr').hidden=false; $('#sname').focus(); return; }
@@ -406,12 +408,31 @@ function renderSurveyForm(){
   };
 }
 
+/* ---- 2 удаа асууж баталгаажуулах ---- */
+function confirmN(zone, qs, yesLabel, onYes, k=0){
+  const last=k===qs.length-1, tag=k?`<b>${k+1}/${qs.length}. Дахин асууж байна:</b> `:(qs.length>1?`<b>1/${qs.length}.</b> `:'');
+  zone.innerHTML=`<div class="notice" style="border-left-color:var(--bad)">${tag}${qs[k]}
+    <div class="row" style="margin-top:10px"><button type="button" class="btn danger small" id="cnYes">${last?yesLabel:'Тийм'}</button><button type="button" class="btn ghost small" id="cnNo">Болих</button></div></div>`;
+  zone.querySelector('#cnNo').onclick=()=>render();
+  zone.querySelector('#cnYes').onclick=()=> last ? onYes() : confirmN(zone, qs, yesLabel, onYes, k+1);
+  zone.scrollIntoView({behavior:'smooth', block:'center'});
+}
+const confirm2=(zone,q1,q2,yes,onYes)=>confirmN(zone,[q1,q2],yes,onYes);
+function deleteSurvey(s, zone){
+  const n=inspections.filter(i=>i.surveyId===s.id).length;
+  confirmN(zone, [`“${esc(s.name)}” судалгааг устгах уу? Түүний ${n} үзлэг мөн устна. Машинууд “Машинууд” жагсаалтад үлдэнэ.`,
+    `Sheet рүү илгээгээгүй үзлэг байвал алга болно. Эхлээд “Бүх датаг илгээх” дарсан уу? Үргэлжлүүлэх үү?`,
+    `“${esc(s.name)}” судалгаа, ${n} үзлэгийг бүр мөсөн устгах уу? Буцаах боломжгүй.`], 'Тийм, бүр мөсөн устгах',
+    ()=>{ surveys=surveys.filter(x=>x.id!==s.id); inspections=inspections.filter(i=>i.surveyId!==s.id); save(K.surveys,surveys); save(K.insp,inspections); sDraft=null; toast('Судалгаа устгагдлаа'); go({name:'home',tab:'surveys'}); });
+}
+
 /* ---- add / edit car ---- */
 function renderCarForm(){
   const c = cars.find(x=>x.id===view.id) || {};
   const editing=!!c.id;
   const backTo=view.back||{name:'home',tab:'cars'}; const addToDraft=view.addToDraft;
   const back=()=>go(backTo);
+  const inSurvey = backTo.name==='survey' && surveyOf(backTo.id);
   bar(editing?'Машин засах':'Машин нэмэх','',back);
   const knownMakes=[...new Set(cars.map(x=>x.make).filter(Boolean).concat(['Toyota','Lexus','Hyundai','Nissan','Mitsubishi','Ford','Jeep','Isuzu']))];
   const knownDrivers=[...new Set(cars.map(x=>x.driver).filter(Boolean))];
@@ -426,15 +447,17 @@ function renderCarForm(){
     <div class="field"><label for="driver">Жолооч *</label><input type="text" id="driver" list="drivers" value="${esc(c.driver)}" placeholder="Овог нэр"><div class="err" id="drvErr" hidden></div></div>
     <datalist id="makes">${knownMakes.map(m=>`<option value="${esc(m)}">`).join('')}</datalist>
     <datalist id="drivers">${knownDrivers.map(m=>`<option value="${esc(m)}">`).join('')}</datalist>
-    ${editing?`<div id="delZone"><button type="button" class="btn ghost small" id="del" style="color:var(--bad)">Машиныг устгах</button></div>`:''}
+    ${editing?`<div id="delZone">${inSurvey?`<button type="button" class="btn ghost small" id="unlink" style="color:var(--bad)">Энэ судалгаанаас хасах</button>`:`<button type="button" class="btn ghost small" id="del" style="color:var(--bad)">Машиныг бүртгэлээс устгах</button>`}</div>`:''}
   </form>`;
   foot(`<button class="btn wide" id="saveCar">${editing?'Хадгалах':'Машин нэмэх'}</button>`);
-  if(editing) $('#del').onclick=()=>{
-    $('#delZone').innerHTML=`<div class="notice" style="border-left-color:var(--bad)">${esc(c.plate)} машиныг бүртгэлээс устгах уу? Бүх судалгаанаас хасагдана, үзлэгийн түүх хадгалагдана.
-      <div class="row" style="margin-top:10px"><button type="button" class="btn danger small" id="delYes">Тийм, устгах</button><button type="button" class="btn ghost small" id="delNo">Болих</button></div></div>`;
-    $('#delYes').onclick=()=>{ cars=cars.filter(x=>x.id!==c.id); surveys=surveys.map(s=>({...s, carIds:s.carIds.filter(id=>id!==c.id)})); save(K.cars,cars); save(K.surveys,surveys); toast('Машин устгагдлаа'); back(); };
-    $('#delNo').onclick=()=>render();
-  };
+  if(editing && inSurvey) $('#unlink').onclick=()=>confirm2($('#delZone'),
+    `${esc(c.plate)} машиныг “${esc(inSurvey.name)}” судалгаанаас хасах уу? Машин “Машинууд” жагсаалтад үлдэнэ.`,
+    `${esc(c.plate)}-г энэ судалгаанаас хасах уу? Өмнөх үзлэгүүд нь хадгалагдана.`, 'Тийм, хасах',
+    ()=>{ surveys=surveys.map(s=>s.id===inSurvey.id?{...s, carIds:s.carIds.filter(id=>id!==c.id)}:s); save(K.surveys,surveys); toast('Судалгаанаас хасагдлаа'); back(); });
+  if(editing && !inSurvey) $('#del').onclick=()=>confirm2($('#delZone'),
+    `${esc(c.plate)} машиныг бүртгэлээс устгах уу? Бүх судалгаанаас хасагдана, үзлэгийн түүх хадгалагдана.`,
+    `${esc(c.plate)} машиныг “Машинууд” жагсаалтаас бүр мөсөн устгах уу?`, 'Тийм, бүр мөсөн устгах',
+    ()=>{ cars=cars.filter(x=>x.id!==c.id); surveys=surveys.map(s=>({...s, carIds:s.carIds.filter(id=>id!==c.id)})); save(K.cars,cars); save(K.surveys,surveys); toast('Машин устгагдлаа'); back(); });
   $('#saveCar').onclick=()=>{
     const plate=$('#plate').value.trim().toUpperCase().replace(/\s+/g,' ');
     const driver=$('#driver').value.trim();
@@ -571,9 +594,8 @@ function renderDetail(){
   foot(`<button class="btn ghost" id="copy" style="flex:1">Тайлан хуулах</button><button class="btn" id="home" style="flex:1">Судалгаа руу</button>`);
   $('#home').onclick=()=>toSurvey(i.surveyId);
   $('#copy').onclick=()=>{ const txt=report(i); navigator.clipboard.writeText(txt).then(()=>toast('Тайлан хуулагдлаа. Чат руу буулгана уу.'),()=>{ const ta=document.createElement('textarea'); ta.value=txt; ta.style.minHeight='180px'; $('#app').appendChild(ta); ta.select(); toast('Текстийг сонгоод хуулна уу.'); }); };
-  $('#delI').onclick=()=>{ $('#delZone').innerHTML=`<div class="notice" style="border-left-color:var(--bad)">Энэ үзлэгийг устгах уу?<div class="row" style="margin-top:10px"><button class="btn danger small" id="y">Тийм, устгах</button><button class="btn ghost small" id="n">Болих</button></div></div>`;
-    $('#y').onclick=()=>{ inspections=inspections.filter(x=>x.id!==i.id); save(K.insp,inspections); toast('Устгагдлаа'); toSurvey(i.surveyId,'hist'); };
-    $('#n').onclick=()=>render(); };
+  $('#delI').onclick=()=>confirm2($('#delZone'), 'Энэ үзлэгийг устгах уу?', `${esc(i.plate)} · ${fmt(i.at)} үзлэгийг бүр мөсөн устгах уу? Буцаах боломжгүй.`, 'Тийм, устгах',
+    ()=>{ inspections=inspections.filter(x=>x.id!==i.id); save(K.insp,inspections); toast('Устгагдлаа'); toSurvey(i.surveyId,'hist'); });
 }
 
 /* ---- Google Sheet sync (Apps Script web app, same pattern as the Saiga app) ---- */
