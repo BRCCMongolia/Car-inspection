@@ -472,7 +472,7 @@ function renderInspect(){
     let h=stepsBar(2)+`<div class="row" style="justify-content:space-between;align-items:center"><span style="color:var(--muted);font-size:14px">Хэвийн бус бол тайлбар заавал бичнэ.</span>
       <button class="btn ghost small" id="allOk">Үлдсэнийг хэвийн</button></div><div class="form" style="padding-block:4px">`;
     ITEMS.forEach((it,idx)=>{ const r=d.items[idx]; const miss = d.tried && (r.s===null || (r.s==='bad' && !r.note.trim()));
-      h+=`<div class="item ${r.s==='bad'?'isbad':''}" id="it-${it.id}"><div class="item-head"><div class="item-title"><span class="n">${idx+1}.</span>${esc(it.t)}${it.suggest?'<span class="tag">Санал</span>':''}</div>
+      h+=`<div class="item ${r.s==='bad'?'isbad':''}" id="it-${it.id}"><div class="item-head"><div class="item-title"><span class="n">${idx+1}.</span>${esc(it.t)}</div>
         <div class="seg" role="group" aria-label="${esc(it.t)}"><button class="ok" aria-pressed="${r.s==='ok'}" data-i="${idx}" data-s="ok">Хэвийн</button><button class="bad" aria-pressed="${r.s==='bad'}" data-i="${idx}" data-s="bad">Хэвийн бус</button></div></div>
         ${r.s==='bad'?`<textarea id="note-${idx}" data-note="${idx}" placeholder="Хэвийн бус тайлбар: юу гэмтсэн, засах боломжтой эсэх">${esc(r.note)}</textarea>
           <div class="row" style="align-items:center"><label class="photo-btn">📷 Гэмтлийн зураг<input type="file" accept="image/*" capture="environment" data-photo="${idx}"></label>${r.photo?`<img class="thumb" src="${r.photo}" alt="Гэмтлийн зураг">`:''}</div>`:''}
