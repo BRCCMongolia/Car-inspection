@@ -548,8 +548,9 @@ function renderDetail(){
 
 /* ---- Google Sheet sync (Apps Script web app, same pattern as the Saiga app) ---- */
 // Байгууллагын Apps Script /exec холбоосыг энд тавьвал бүх утсанд автоматаар тохирно.
-const DEFAULT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzp4TRahPxv-kHNSSEQfEFHoLsBIL-BcDRolZ-dOqI04QPyDvMqECa-NbbGZXpWTzP4/exec';
+const DEFAULT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbz31DJWRV2pznKr8HxB2cNEaYb3NfzdYFDjUdjA9FIDxR1xksR9lGGWxHUChyYm0ySL/exec';
 const K_URL='vi.sheetUrl';
+try{ if((localStorage.getItem(K_URL)||'').includes('AKfycbzp4TRahPxv-kHNSSEQfEFHoLsBIL-BcDRolZ-dOqI04QPyDvMqECa-NbbGZXpWTzP4')) localStorage.removeItem(K_URL); }catch(_){}
 const sheetUrl = () => (load(K_URL,'')||DEFAULT_SHEET_URL).trim();
 let syncing=false, syncMsg='', lastSync=load('vi.lastSync',0);
 const pending = () => inspections.filter(i=>!i.synced).length;
