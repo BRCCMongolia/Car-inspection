@@ -555,8 +555,11 @@ let syncing=false, syncMsg='', lastSync=load('vi.lastSync',0);
 const pending = () => inspections.filter(i=>!i.synced).length;
 async function post(url, payload, ms=90000){
   const ac=new AbortController(); const timer=setTimeout(()=>ac.abort(), ms); let j;
-  try{ const res=await fetch(url,{method:'POST', body:JSON.stringify(payload), headers:{'Content-Type':'text/plain;charset=utf-8'}, redirect:'follow', signal:ac.signal}); j=await res.json(); }
-  catch(e){ throw ac.signal.aborted ? new Error('Хариу ирсэнгүй (хугацаа хэтэрлээ)') : new Error('Холбогдож чадсангүй'); }
+  let res;
+  try{ res=await fetch(url,{method:'POST', body:JSON.stringify(payload), headers:{'Content-Type':'text/plain;charset=utf-8'}, redirect:'follow', signal:ac.signal}); }
+  catch(e){ clearTimeout(timer); throw ac.signal.aborted ? new Error('Хариу ирсэнгүй (хугацаа хэтэрлээ)') : new Error(navigator.onLine?'Google скрипт хариу өгсөнгүй. Deploy-н “Who has access” нь “Anyone” эсэхийг шалгана уу':'Интернэт алга'); }
+  try{ const t=await res.text(); try{ j=JSON.parse(t); }catch(_){ throw new Error(/doGet|doPost|function/i.test(t)?'Скриптийн код бүрэн хуулагдаагүй байна':'Скрипт JSON биш хариу өгсөн (эрх эсвэл Deploy тохиргоо буруу)'); } }
+  catch(e){ throw e; }
   finally{ clearTimeout(timer); }
   if(!j.ok) throw new Error(j.error||'Sheet алдаа'); return j;
 }
